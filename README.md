@@ -1,12 +1,6 @@
-# VynCo Python SDK
+# vynco
 
-Python client for the [VynCo](https://vynco.ch) Swiss Corporate Intelligence API.
-
-- Async and sync clients
-- Pydantic v2 models with full type safety
-- 12 resource modules covering the full API surface
-- Automatic retry with exponential backoff
-- Response metadata (credits, rate limits, request tracing)
+Python SDK for the [VynCo](https://vynco.ch) Swiss Corporate Intelligence API.
 
 ## Installation
 
@@ -14,22 +8,35 @@ Python client for the [VynCo](https://vynco.ch) Swiss Corporate Intelligence API
 pip install vynco
 ```
 
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add vynco
+```
+
 ## Quick Start
 
 ```python
 import vynco
 
-# Sync client
 client = vynco.Client("vc_live_your_api_key")
+
+# Search companies
 result = client.companies.search(query="Novartis", canton="BS")
 for company in result.data.items:
     print(f"{company.name} ({company.uid}) - {company.status}")
 
-# Check remaining credits
-print(f"Credits remaining: {result.meta.credits_remaining}")
+# Get company details
+company = client.companies.get("CHE-100.023.968")
+print(f"{company.data.name}: {company.data.purpose}")
+
+# Check credit balance
+balance = client.credits.balance()
+print(f"Balance: {balance.data.balance} credits")
+print(f"Credits used: {result.meta.credits_used}")
 ```
 
-### Async
+## Async Usage
 
 ```python
 import vynco
@@ -38,16 +45,9 @@ async def main():
     async with vynco.AsyncClient("vc_live_your_api_key") as client:
         result = await client.companies.search(query="Novartis")
         print(result.data.items[0].name)
-```
 
-### Environment Variable
-
-```bash
-export VYNCO_API_KEY=vc_live_your_api_key
-```
-
-```python
-client = vynco.Client()  # reads VYNCO_API_KEY from environment
+        balance = await client.credits.balance()
+        print(f"Balance: {balance.data.balance}")
 ```
 
 ## Resources
@@ -67,60 +67,18 @@ client = vynco.Client()  # reads VYNCO_API_KEY from environment
 | `client.settings` | `get`, `update` |
 | `client.analytics` | `cantons`, `auditors`, `rfm_segments`, `velocity` |
 
-## Usage Examples
+## Response Metadata
 
-### Search Companies
-
-```python
-result = client.companies.search(
-    query="pharma",
-    canton="BS",
-    status="ACTIVE",
-    page=1,
-    page_size=50,
-)
-print(f"Found {result.data.total} companies")
-```
-
-### Get Company Details
+Every response includes header metadata:
 
 ```python
-company = client.companies.get("CHE-100.023.968")
-print(f"{company.data.name} - Capital: {company.data.capital_nominal} {company.data.capital_currency}")
-```
+resp = client.companies.get("CHE-100.023.968")
 
-### Generate AI Dossier
-
-```python
-dossier = client.dossiers.generate("CHE-100.023.968", level="comprehensive")
-print(dossier.data.executive_summary)
-for insight in dossier.data.key_insights:
-    print(f"  - {insight}")
-```
-
-### Error Handling
-
-```python
-try:
-    result = client.companies.get("CHE-000.000.000")
-except vynco.NotFoundError as e:
-    print(f"Not found: {e.detail}")
-except vynco.InsufficientCreditsError:
-    print("Top up your credits")
-except vynco.RateLimitError:
-    print("Slow down, retry later")
-except vynco.AuthenticationError:
-    print("Check your API key")
-except vynco.VyncoError as e:
-    print(f"API error ({e.status}): {e.detail}")
-```
-
-### Credit Management
-
-```python
-balance = client.credits.balance()
-print(f"Balance: {balance.data.balance}/{balance.data.monthly_credits}")
-print(f"Tier: {balance.data.tier}")
+print(f"Request ID: {resp.meta.request_id}")
+print(f"Credits used: {resp.meta.credits_used}")
+print(f"Credits remaining: {resp.meta.credits_remaining}")
+print(f"Rate limit: {resp.meta.rate_limit_limit}")
+print(f"Data source: {resp.meta.data_source}")  # "Zefix" or "LINDAS"
 ```
 
 ## Configuration
@@ -134,13 +92,58 @@ client = vynco.Client(
 )
 ```
 
+The API key can also be set via the `VYNCO_API_KEY` environment variable:
+
+```bash
+export VYNCO_API_KEY=vc_live_your_api_key
+```
+
+```python
+client = vynco.Client()  # reads from VYNCO_API_KEY
+```
+
+## Error Handling
+
+```python
+try:
+    company = client.companies.get("CHE-000.000.000")
+except vynco.NotFoundError as e:
+    print(f"Not found: {e.detail}")
+except vynco.RateLimitError:
+    print("Rate limited, try again later")
+except vynco.InsufficientCreditsError:
+    print("Top up credits")
+except vynco.AuthenticationError:
+    print("Check your API key")
+except vynco.VyncoError as e:
+    print(f"Error ({e.status}): {e.detail}")
+```
+
+| Exception | HTTP Status |
+|-----------|-------------|
+| `AuthenticationError` | 401 |
+| `InsufficientCreditsError` | 402 |
+| `ForbiddenError` | 403 |
+| `NotFoundError` | 404 |
+| `ValidationError` | 400, 422 |
+| `RateLimitError` | 429 |
+| `ServerError` | 5xx |
+| `ConfigError` | — (client misconfiguration) |
+
+## Requirements
+
+- Python 3.11+
+- [httpx](https://www.python-httpx.org/) (async + sync HTTP)
+- [Pydantic](https://docs.pydantic.dev/) v2 (model validation)
+
 ## Development
 
 ```bash
-uv sync
-uv run pytest
-uv run ruff check src/
-uv run mypy src/
+uv sync                     # install dependencies
+uv run pytest               # run tests
+uv run ruff check src/      # lint
+uv run ruff format src/     # format
+uv run mypy src/            # type check
 ```
 
 ## License
