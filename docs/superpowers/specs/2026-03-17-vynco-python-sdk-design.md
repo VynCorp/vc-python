@@ -72,7 +72,7 @@ src/vynco/
 │   ├── webhooks.py          # Webhook, WebhookCreated, CreateWebhookRequest, UpdateWebhookRequest
 │   ├── teams.py             # Team, CreateTeamRequest
 │   ├── users.py             # UserProfile, UpdateProfileRequest
-│   ├── analytics.py         # ClusterResult, AnomalyResult, RfmSegment, CohortResult, etc.
+│   ├── analytics.py         # CantonAnalytics, AuditorAnalytics, RfmSegment
 │   ├── relationships.py     # CompanyRelationship, CompanyHierarchy
 │   └── shared.py            # PaginatedResponse[T]
 └── resources/
@@ -271,7 +271,16 @@ result = client.companies.search(query="Novartis", canton="BS", page=1)
 result = client.companies.search(CompanySearchParams(search="Novartis", canton="BS"))
 ```
 
+**Parameter naming:** The SDK uses `query` as the Python parameter name, which maps to
+the `search` query parameter on the wire. This is more intuitive for Python users. The
+`_build_params()` helper handles this mapping (`query` → `search`).
+
 ## Resources and Endpoints
+
+> **Path source of truth:** The Rust SDK paths are used as the canonical reference for all
+> endpoints it already covers (these are tested against the live API). For new endpoints
+> beyond the Rust SDK scope, paths are derived from the backend Azure Functions routes.
+> The API gateway at `api.vynco.ch` may normalize paths differently from the raw backend.
 
 ### 1. Companies (12 methods)
 
@@ -284,8 +293,8 @@ result = client.companies.search(CompanySearchParams(search="Novartis", canton="
 | `compare(uids)` | POST | `/companies/compare` | `Response[CompanyComparison]` |
 | `persons(uid)` | GET | `/companies/{uid}/persons` | `Response[list[PersonRole]]` |
 | `dossier(uid)` | GET | `/companies/{uid}/dossier` | `Response[Dossier]` |
-| `relationships(uid)` | GET | `/companies/{uid}/relationships` | `Response[list[CompanyRelationship]]` |
-| `hierarchy(uid)` | GET | `/companies/{uid}/hierarchy` | `Response[CompanyHierarchy]` |
+| `relationships(uid)` | GET | `/companies/{uid}/relationships` | `Response[RelationshipsResponse]` |
+| `hierarchy(uid)` | GET | `/companies/{uid}/hierarchy` | `Response[RelationshipsResponse]` |
 | `changes(uid)` | GET | `/companies/{uid}/changes` | `Response[list[CompanyChange]]` |
 | `batch_get(uids)` | POST | `/companies/batch` | `Response[list[Company]]` |
 | `news(uid)` | GET | `/companies/{uid}/news` | `Response[list[CompanyNews]]` |
@@ -366,17 +375,17 @@ result = client.companies.search(CompanySearchParams(search="Novartis", canton="
 | `get()` | GET | `/settings` | `Response[dict]` |
 | `update(preferences)` | PUT | `/settings` | `Response[dict]` |
 
-### 12. Analytics (7 methods)
+### 12. Analytics (4 methods)
 
 | Method | HTTP | Path | Returns |
 |--------|------|------|---------|
-| `companies()` | GET | `/analytics/companies` | `Response[dict]` |
 | `cantons()` | GET | `/analytics/cantons` | `Response[list[CantonAnalytics]]` |
 | `auditors()` | GET | `/analytics/auditors` | `Response[list[AuditorAnalytics]]` |
-| `cluster(*, params)` | POST | `/analytics/cluster` | `Response[ClusterResult]` |
-| `anomalies(*, params)` | POST | `/analytics/anomalies` | `Response[AnomalyResult]` |
-| `rfm_segments()` | GET | `/analytics/segments/rfm` | `Response[list[RfmSegment]]` |
-| `cohorts()` | GET | `/analytics/cohorts` | `Response[CohortResult]` |
+| `rfm_segments()` | GET | `/analytics/rfm-segments` | `Response[list[RfmSegment]]` |
+| `velocity()` | GET | `/analytics/velocity` | `Response[dict]` |
+
+> **Note:** Clustering, anomaly detection, and cohort analysis are internal backend services not yet
+> exposed as API endpoints. They will be added when the backend makes them available.
 
 ## Type Models (Pydantic v2)
 
@@ -391,6 +400,7 @@ class VyncoModel(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
+        extra="ignore",  # Forward-compatible: ignore unknown fields from API
     )
 ```
 
@@ -420,9 +430,12 @@ class CompanyCount(VyncoModel):
 # types/shared.py
 class PaginatedResponse(VyncoModel, Generic[T]):
     items: list[T]
-    total: int
+    total: int = Field(0, validation_alias=AliasChoices("total", "totalCount"))
     page: int
     page_size: int
+    total_pages: int | None = None
+    has_previous_page: bool | None = None
+    has_next_page: bool | None = None
 
 # types/persons.py
 class PersonRole(VyncoModel):
@@ -564,16 +577,14 @@ class CompanyRelationship(VyncoModel):
     target_lei: str | None = None
     data_source: str = ""
     is_active: bool = True
+    start_date: str | None = None
+    end_date: str | None = None
 
-class CompanyHierarchyNode(VyncoModel):
-    uid: str
-    name: str = ""
-    relationship_type: str = ""
-    children: list["CompanyHierarchyNode"] = []
-
-class CompanyHierarchy(VyncoModel):
-    root: CompanyHierarchyNode
-    total_entities: int = 0
+class RelationshipsResponse(VyncoModel):
+    """Wrapper returned by relationships and hierarchy endpoints."""
+    company_uid: str
+    relationships: list[CompanyRelationship] = []
+    total: int = 0
 
 # types/analytics.py
 class CantonAnalytics(VyncoModel):
@@ -587,25 +598,12 @@ class AuditorAnalytics(VyncoModel):
     client_count: int = 0
     change_count: int = 0
 
-class ClusterResult(VyncoModel):
-    clusters: list[dict] = []
-    n_clusters: int = 0
-    silhouette_score: float | None = None
-
-class AnomalyResult(VyncoModel):
-    anomalies: list[dict] = []
-    total_anomalies: int = 0
-
 class RfmSegment(VyncoModel):
     segment: str = ""
     count: int = 0
     avg_recency: float = 0.0
     avg_frequency: float = 0.0
     avg_monetary: float = 0.0
-
-class CohortResult(VyncoModel):
-    cohorts: list[dict] = []
-    retention_matrix: list[list[float]] = []
 
 class CompanyComparison(VyncoModel):
     companies: list[dict] = []
