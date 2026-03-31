@@ -177,9 +177,7 @@ def test_sync_company_list():
             return_value=httpx.Response(
                 200,
                 json={
-                    "items": [
-                        {"uid": "CHE-105.805.080", "name": "Novartis AG", "canton": "BS"}
-                    ],
+                    "items": [{"uid": "CHE-105.805.080", "name": "Novartis AG", "canton": "BS"}],
                     "totalCount": 1,
                     "page": 1,
                     "pageSize": 20,

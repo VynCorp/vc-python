@@ -189,9 +189,7 @@ class Webhooks:
             response_type=TestDeliveryResponse,
         )
 
-    def deliveries(
-        self, id: str, *, limit: int | None = None
-    ) -> Response[_list[WebhookDelivery]]:
+    def deliveries(self, id: str, *, limit: int | None = None) -> Response[_list[WebhookDelivery]]:
         """Get delivery history for a webhook."""
         params = _build_params({"limit": limit})
         return self._client._request_model(

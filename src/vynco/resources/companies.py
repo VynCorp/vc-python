@@ -66,9 +66,7 @@ class AsyncCompanies:
             response_type=CompanyCount,
         )
 
-    async def events(
-        self, uid: str, *, limit: int | None = None
-    ) -> Response[EventListResponse]:
+    async def events(self, uid: str, *, limit: int | None = None) -> Response[EventListResponse]:
         """Get events for a company."""
         params = _build_params({"limit": limit})
         return await self._client._request_model(
@@ -193,9 +191,7 @@ class Companies:
             response_type=CompanyCount,
         )
 
-    def events(
-        self, uid: str, *, limit: int | None = None
-    ) -> Response[EventListResponse]:
+    def events(self, uid: str, *, limit: int | None = None) -> Response[EventListResponse]:
         """Get events for a company."""
         params = _build_params({"limit": limit})
         return self._client._request_model(

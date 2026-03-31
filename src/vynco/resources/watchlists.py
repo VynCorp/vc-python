@@ -78,9 +78,7 @@ class AsyncWatchlists:
             f"/v1/watchlists/{id}/companies/{uid}",
         )
 
-    async def events(
-        self, id: str, *, limit: int | None = None
-    ) -> Response[EventListResponse]:
+    async def events(self, id: str, *, limit: int | None = None) -> Response[EventListResponse]:
         """Get events for a watchlist."""
         params = _build_params({"limit": limit})
         return await self._client._request_model(
@@ -150,9 +148,7 @@ class Watchlists:
             f"/v1/watchlists/{id}/companies/{uid}",
         )
 
-    def events(
-        self, id: str, *, limit: int | None = None
-    ) -> Response[EventListResponse]:
+    def events(self, id: str, *, limit: int | None = None) -> Response[EventListResponse]:
         """Get events for a watchlist."""
         params = _build_params({"limit": limit})
         return self._client._request_model(
