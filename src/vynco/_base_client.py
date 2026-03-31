@@ -18,7 +18,7 @@ from vynco._response import Response, ResponseMeta
 
 T = TypeVar("T")
 
-_PARAM_RENAME = {"query": "search"}
+_PARAM_RENAME = {"query": "search", "change_type": "type"}
 
 
 def _build_params(kwargs: dict[str, Any]) -> dict[str, str]:
@@ -77,12 +77,15 @@ def _deserialize(data: Any, response_type: type[T]) -> T:
     # list[X]
     if origin is list and args:
         item_type = args[0]
+        items: list[Any]
         if isinstance(data, list):
             items = data
         elif isinstance(data, dict):
             # Try "data" key, then first array-valued key
-            items = data.get("data")
-            if not isinstance(items, list):
+            maybe = data.get("data")
+            if isinstance(maybe, list):
+                items = maybe
+            else:
                 for val in data.values():
                     if isinstance(val, list):
                         items = val
@@ -104,10 +107,10 @@ def _deserialize(data: Any, response_type: type[T]) -> T:
         if isinstance(concrete, type) and issubclass(concrete, BaseModel):
             return concrete.model_validate(data)
         # For runtime generics, we need the origin class
-        return origin.model_validate(data)
+        return origin.model_validate(data)  # type: ignore[no-any-return]
 
     # dict or other simple types
-    return data  # type: ignore[return-value]
+    return data  # type: ignore[no-any-return]
 
 
 class BaseClientConfig:
@@ -145,14 +148,12 @@ class BaseClientConfig:
                     return float(retry_after)
                 except ValueError:
                     pass
-        return 0.5 * (2**attempt)
+        return 0.5 * float(2**attempt)
 
     def _should_retry(self, status_code: int) -> bool:
         return status_code == 429 or status_code >= 500
 
-    def _handle_response(
-        self, resp: httpx.Response, response_type: type[T]
-    ) -> Response[T]:
+    def _handle_response(self, resp: httpx.Response, response_type: type[T]) -> Response[T]:
         meta = _parse_meta(resp.headers)
 
         if not resp.is_success:

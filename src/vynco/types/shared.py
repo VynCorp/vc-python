@@ -23,8 +23,5 @@ class PaginatedResponse(VyncoModel, Generic[T]):
 
     items: list[T]
     total: int = Field(0, validation_alias=AliasChoices("total", "totalCount"))
-    page: int
-    page_size: int
-    total_pages: int | None = None
-    has_previous_page: bool | None = None
-    has_next_page: bool | None = None
+    page: int = 0
+    page_size: int = 0

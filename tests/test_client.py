@@ -8,7 +8,7 @@ import respx
 
 import vynco
 
-BASE_URL = "https://api.vynco.ch/v1"
+BASE_URL = "https://api.vynco.ch"
 
 
 # ---------------------------------------------------------------------------
@@ -38,6 +38,11 @@ def test_custom_base_url():
     assert client.base_url == "https://custom.api.com/v2"
 
 
+def test_default_base_url():
+    client = vynco.Client("vc_test_key")
+    assert client.base_url == "https://api.vynco.ch"
+
+
 # ---------------------------------------------------------------------------
 # Authentication
 # ---------------------------------------------------------------------------
@@ -45,16 +50,10 @@ def test_custom_base_url():
 
 async def test_authorization_header_is_set():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/credits/balance").mock(
+        route = mock.get("/v1/credits/balance").mock(
             return_value=httpx.Response(
                 200,
-                json={
-                    "balance": 1000,
-                    "monthlyCredits": 500,
-                    "usedThisMonth": 50,
-                    "tier": "starter",
-                    "overageRate": 0.01,
-                },
+                json={"balance": 1000, "monthlyCredits": 500, "tier": "starter"},
             )
         )
 
@@ -74,9 +73,10 @@ async def test_authorization_header_is_set():
 
 async def test_not_found_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies/CHE-000.000.000").mock(
+        mock.get("/v1/companies/CHE-000.000.000").mock(
             return_value=httpx.Response(
-                404, json={"detail": "Company not found", "status": 404},
+                404,
+                json={"detail": "Company not found", "status": 404},
             )
         )
 
@@ -89,9 +89,10 @@ async def test_not_found_error():
 
 async def test_authentication_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/credits/balance").mock(
+        mock.get("/v1/credits/balance").mock(
             return_value=httpx.Response(
-                401, json={"detail": "Invalid API key", "status": 401},
+                401,
+                json={"detail": "Invalid API key", "status": 401},
             )
         )
 
@@ -103,9 +104,10 @@ async def test_authentication_error():
 
 async def test_rate_limit_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/credits/balance").mock(
+        mock.get("/v1/credits/balance").mock(
             return_value=httpx.Response(
-                429, json={"detail": "Rate limit exceeded", "status": 429},
+                429,
+                json={"detail": "Rate limit exceeded", "status": 429},
             )
         )
 
@@ -117,9 +119,10 @@ async def test_rate_limit_error():
 
 async def test_server_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/credits/balance").mock(
+        mock.get("/v1/credits/balance").mock(
             return_value=httpx.Response(
-                500, json={"detail": "Internal server error", "status": 500},
+                500,
+                json={"detail": "Internal server error", "status": 500},
             )
         )
 
@@ -131,37 +134,40 @@ async def test_server_error():
 
 async def test_insufficient_credits_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.post("/dossiers").mock(
+        mock.post("/v1/dossiers").mock(
             return_value=httpx.Response(
-                402, json={"detail": "Insufficient credits", "status": 402},
+                402,
+                json={"detail": "Insufficient credits", "status": 402},
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
         with pytest.raises(vynco.InsufficientCreditsError) as exc_info:
-            await client.dossiers.generate("CHE-100.000.000", level="comprehensive")
+            await client.dossiers.create(uid="CHE-100.000.000", level="detailed")
         assert exc_info.value.detail == "Insufficient credits"
 
 
 async def test_validation_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies").mock(
+        mock.get("/v1/companies").mock(
             return_value=httpx.Response(
-                422, json={"detail": "Invalid canton code", "status": 422},
+                422,
+                json={"detail": "Invalid canton code", "status": 422},
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
         with pytest.raises(vynco.ValidationError) as exc_info:
-            await client.companies.search(canton="INVALID")
+            await client.companies.list(canton="INVALID")
         assert exc_info.value.detail == "Invalid canton code"
 
 
 async def test_forbidden_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/api-keys").mock(
+        mock.get("/v1/api-keys").mock(
             return_value=httpx.Response(
-                403, json={"detail": "Insufficient permissions", "status": 403},
+                403,
+                json={"detail": "Insufficient permissions", "status": 403},
             )
         )
 
@@ -171,6 +177,36 @@ async def test_forbidden_error():
         assert exc_info.value.detail == "Insufficient permissions"
 
 
+async def test_conflict_error():
+    with respx.mock(base_url=BASE_URL) as mock:
+        mock.post("/v1/watchlists").mock(
+            return_value=httpx.Response(
+                409,
+                json={"detail": "Watchlist already exists", "status": 409},
+            )
+        )
+
+        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
+        with pytest.raises(vynco.ConflictError) as exc_info:
+            await client.watchlists.create(name="Test")
+        assert exc_info.value.detail == "Watchlist already exists"
+
+
+async def test_service_unavailable_error():
+    with respx.mock(base_url=BASE_URL) as mock:
+        mock.get("/v1/credits/balance").mock(
+            return_value=httpx.Response(
+                503,
+                json={"detail": "Service temporarily unavailable", "status": 503},
+            )
+        )
+
+        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
+        with pytest.raises(vynco.ServiceUnavailableError) as exc_info:
+            await client.credits.balance()
+        assert exc_info.value.detail == "Service temporarily unavailable"
+
+
 # ---------------------------------------------------------------------------
 # Response metadata
 # ---------------------------------------------------------------------------
@@ -178,7 +214,7 @@ async def test_forbidden_error():
 
 async def test_response_meta_from_headers():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/teams/me").mock(
+        mock.get("/v1/teams/me").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -188,8 +224,6 @@ async def test_response_meta_from_headers():
                     "tier": "enterprise",
                     "creditBalance": 10000,
                     "monthlyCredits": 10000,
-                    "overageRate": 0.002,
-                    "createdAt": "2025-06-01T00:00:00Z",
                 },
                 headers={
                     "X-Request-Id": "req-xyz-789",
@@ -220,15 +254,15 @@ async def test_response_meta_from_headers():
 
 async def test_retry_on_429():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/credits/balance").mock(
+        route = mock.get("/v1/credits/balance").mock(
             side_effect=[
                 httpx.Response(429, json={"detail": "Rate limited", "status": 429}),
                 httpx.Response(
                     200,
                     json={
                         "balance": 100,
-                        "monthlyCredits": 1000,
-                        "usedThisMonth": 0,
+                        "monthlyCredits": 500,
+                        "usedThisMonth": 400,
                         "tier": "free",
                         "overageRate": 0.0,
                     },
@@ -245,15 +279,15 @@ async def test_retry_on_429():
 
 async def test_retry_on_500():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/credits/balance").mock(
+        route = mock.get("/v1/credits/balance").mock(
             side_effect=[
                 httpx.Response(500, json={"detail": "Server error", "status": 500}),
                 httpx.Response(
                     200,
                     json={
                         "balance": 100,
-                        "monthlyCredits": 1000,
-                        "usedThisMonth": 0,
+                        "monthlyCredits": 500,
+                        "usedThisMonth": 400,
                         "tier": "free",
                         "overageRate": 0.0,
                     },
@@ -270,9 +304,10 @@ async def test_retry_on_500():
 
 async def test_no_retry_on_404():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/companies/CHE-000.000.000").mock(
+        route = mock.get("/v1/companies/CHE-000.000.000").mock(
             return_value=httpx.Response(
-                404, json={"detail": "Not found", "status": 404},
+                404,
+                json={"detail": "Not found", "status": 404},
             )
         )
 
@@ -290,7 +325,7 @@ async def test_no_retry_on_404():
 
 def test_sync_client_works():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/credits/balance").mock(
+        mock.get("/v1/credits/balance").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -312,13 +347,13 @@ def test_sync_client_works():
 
 def test_sync_context_manager():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/credits/balance").mock(
+        mock.get("/v1/credits/balance").mock(
             return_value=httpx.Response(
                 200,
                 json={
                     "balance": 100,
-                    "monthlyCredits": 1000,
-                    "usedThisMonth": 0,
+                    "monthlyCredits": 500,
+                    "usedThisMonth": 400,
                     "tier": "free",
                     "overageRate": 0.0,
                 },

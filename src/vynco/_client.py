@@ -8,17 +8,23 @@ import httpx
 from vynco._base_client import BaseClientConfig
 from vynco._constants import DEFAULT_BASE_URL, DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT
 from vynco._response import Response, ResponseMeta
+from vynco.resources.ai import Ai, AsyncAi
 from vynco.resources.analytics import Analytics, AsyncAnalytics
 from vynco.resources.api_keys import ApiKeys, AsyncApiKeys
+from vynco.resources.auditors import AsyncAuditors, Auditors
 from vynco.resources.billing import AsyncBilling, Billing
 from vynco.resources.changes import AsyncChanges, Changes
 from vynco.resources.companies import AsyncCompanies, Companies
 from vynco.resources.credits import AsyncCredits, Credits
+from vynco.resources.dashboard import AsyncDashboard, Dashboard
 from vynco.resources.dossiers import AsyncDossiers, Dossiers
+from vynco.resources.exports import AsyncExports, Exports
+from vynco.resources.graph import AsyncGraph, Graph
+from vynco.resources.health import AsyncHealth, Health
 from vynco.resources.persons import AsyncPersons, Persons
-from vynco.resources.settings import AsyncSettings, Settings
+from vynco.resources.screening import AsyncScreening, Screening
 from vynco.resources.teams import AsyncTeams, Teams
-from vynco.resources.users import AsyncUsers, Users
+from vynco.resources.watchlists import AsyncWatchlists, Watchlists
 from vynco.resources.webhooks import AsyncWebhooks, Webhooks
 
 T = TypeVar("T")
@@ -33,7 +39,7 @@ class AsyncClient(BaseClientConfig):
     Example::
 
         async with vynco.AsyncClient("vc_live_xxx") as client:
-            result = await client.companies.search(query="Novartis")
+            result = await client.companies.list(query="Novartis")
     """
 
     def __init__(
@@ -45,24 +51,33 @@ class AsyncClient(BaseClientConfig):
         max_retries: int = DEFAULT_MAX_RETRIES,
     ) -> None:
         super().__init__(
-            api_key=api_key, base_url=base_url, timeout=timeout, max_retries=max_retries,
+            api_key=api_key,
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries,
         )
         self._http = httpx.AsyncClient(
             headers=self._headers(),
             timeout=self.timeout,
         )
+        self.health = AsyncHealth(self)
         self.companies = AsyncCompanies(self)
-        self.persons = AsyncPersons(self)
-        self.dossiers = AsyncDossiers(self)
-        self.changes = AsyncChanges(self)
+        self.auditors = AsyncAuditors(self)
+        self.dashboard = AsyncDashboard(self)
+        self.screening = AsyncScreening(self)
+        self.watchlists = AsyncWatchlists(self)
+        self.webhooks = AsyncWebhooks(self)
+        self.exports = AsyncExports(self)
+        self.ai = AsyncAi(self)
+        self.api_keys = AsyncApiKeys(self)
         self.credits = AsyncCredits(self)
         self.billing = AsyncBilling(self)
-        self.api_keys = AsyncApiKeys(self)
-        self.webhooks = AsyncWebhooks(self)
         self.teams = AsyncTeams(self)
-        self.users = AsyncUsers(self)
-        self.settings = AsyncSettings(self)
+        self.changes = AsyncChanges(self)
+        self.persons = AsyncPersons(self)
         self.analytics = AsyncAnalytics(self)
+        self.dossiers = AsyncDossiers(self)
+        self.graph = AsyncGraph(self)
 
     async def _request(
         self,
@@ -79,7 +94,10 @@ class AsyncClient(BaseClientConfig):
         for attempt in range(self.max_retries + 1):
             try:
                 resp = await self._http.request(
-                    method, url, params=params, json=json,
+                    method,
+                    url,
+                    params=params,
+                    json=json,
                 )
             except httpx.HTTPError as e:
                 last_exc = e
@@ -138,7 +156,7 @@ class Client(BaseClientConfig):
     Example::
 
         with vynco.Client("vc_live_xxx") as client:
-            result = client.companies.search(query="Novartis")
+            result = client.companies.list(query="Novartis")
     """
 
     def __init__(
@@ -150,24 +168,33 @@ class Client(BaseClientConfig):
         max_retries: int = DEFAULT_MAX_RETRIES,
     ) -> None:
         super().__init__(
-            api_key=api_key, base_url=base_url, timeout=timeout, max_retries=max_retries,
+            api_key=api_key,
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries,
         )
         self._http = httpx.Client(
             headers=self._headers(),
             timeout=self.timeout,
         )
+        self.health = Health(self)
         self.companies = Companies(self)
-        self.persons = Persons(self)
-        self.dossiers = Dossiers(self)
-        self.changes = Changes(self)
+        self.auditors = Auditors(self)
+        self.dashboard = Dashboard(self)
+        self.screening = Screening(self)
+        self.watchlists = Watchlists(self)
+        self.webhooks = Webhooks(self)
+        self.exports = Exports(self)
+        self.ai = Ai(self)
+        self.api_keys = ApiKeys(self)
         self.credits = Credits(self)
         self.billing = Billing(self)
-        self.api_keys = ApiKeys(self)
-        self.webhooks = Webhooks(self)
         self.teams = Teams(self)
-        self.users = Users(self)
-        self.settings = Settings(self)
+        self.changes = Changes(self)
+        self.persons = Persons(self)
         self.analytics = Analytics(self)
+        self.dossiers = Dossiers(self)
+        self.graph = Graph(self)
 
     def _request(
         self,
@@ -186,7 +213,10 @@ class Client(BaseClientConfig):
         for attempt in range(self.max_retries + 1):
             try:
                 resp = self._http.request(
-                    method, url, params=params, json=json,
+                    method,
+                    url,
+                    params=params,
+                    json=json,
                 )
             except httpx.HTTPError as e:
                 last_exc = e

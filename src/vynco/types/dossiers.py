@@ -4,12 +4,23 @@ from vynco.types.shared import VyncoModel
 
 
 class Dossier(VyncoModel):
-    """An AI-generated company dossier."""
+    """A managed company dossier."""
 
     id: str
-    company_uid: str
-    status: str = ""
-    executive_summary: str | None = None
-    key_insights: list[str] | None = None
-    risk_factors: list[str] | None = None
-    generated_at: str | None = None
+    user_id: str = ""
+    company_uid: str = ""
+    company_name: str = ""
+    level: str = ""
+    content: str = ""
+    sources: list[str] = []
+    created_at: str = ""
+
+
+class DossierSummary(VyncoModel):
+    """Dossier summary (used in list responses)."""
+
+    id: str
+    company_uid: str = ""
+    company_name: str = ""
+    level: str = ""
+    created_at: str = ""

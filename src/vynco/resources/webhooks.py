@@ -1,12 +1,21 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import builtins
+from typing import TYPE_CHECKING, Any
 
+from vynco._base_client import _build_params
 from vynco._response import Response, ResponseMeta
-from vynco.types.webhooks import Webhook, WebhookCreated
+from vynco.types.webhooks import (
+    CreateWebhookResponse,
+    TestDeliveryResponse,
+    WebhookDelivery,
+    WebhookSubscription,
+)
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
+
+_list = builtins.list
 
 
 class AsyncWebhooks:
@@ -15,26 +24,35 @@ class AsyncWebhooks:
     def __init__(self, client: AsyncClient) -> None:
         self._client = client
 
-    async def list(self) -> Response[list[Webhook]]:
-        """List all webhooks."""
+    async def list(self) -> Response[_list[WebhookSubscription]]:
+        """List all webhook subscriptions."""
         return await self._client._request_model(
-            "GET", "/webhooks", response_type=list[Webhook],
+            "GET",
+            "/v1/webhooks",
+            response_type=list[WebhookSubscription],
         )
 
     async def create(
-        self, *, url: str, events: list[str]
-    ) -> Response[WebhookCreated]:
-        """Create a new webhook subscription."""
+        self,
+        *,
+        url: str,
+        description: str | None = None,
+        event_filters: _list[str] | None = None,
+        company_filters: _list[str] | None = None,
+    ) -> Response[CreateWebhookResponse]:
+        """Create a webhook subscription."""
+        body: dict[str, Any] = {"url": url}
+        if description is not None:
+            body["description"] = description
+        if event_filters is not None:
+            body["eventFilters"] = event_filters
+        if company_filters is not None:
+            body["companyFilters"] = company_filters
         return await self._client._request_model(
-            "POST", "/webhooks",
-            json={"url": url, "events": events},
-            response_type=WebhookCreated,
-        )
-
-    async def get(self, id: str) -> Response[Webhook]:
-        """Get a webhook by ID."""
-        return await self._client._request_model(
-            "GET", f"/webhooks/{id}", response_type=Webhook,
+            "POST",
+            "/v1/webhooks",
+            json=body,
+            response_type=CreateWebhookResponse,
         )
 
     async def update(
@@ -42,29 +60,54 @@ class AsyncWebhooks:
         id: str,
         *,
         url: str | None = None,
-        events: list[str] | None = None,
+        description: str | None = None,
+        event_filters: _list[str] | None = None,
+        company_filters: _list[str] | None = None,
         status: str | None = None,
-    ) -> Response[Webhook]:
-        """Update a webhook."""
-        body: dict = {}
+    ) -> Response[WebhookSubscription]:
+        """Update a webhook subscription."""
+        body: dict[str, Any] = {}
         if url is not None:
             body["url"] = url
-        if events is not None:
-            body["events"] = events
+        if description is not None:
+            body["description"] = description
+        if event_filters is not None:
+            body["eventFilters"] = event_filters
+        if company_filters is not None:
+            body["companyFilters"] = company_filters
         if status is not None:
             body["status"] = status
         return await self._client._request_model(
-            "PUT", f"/webhooks/{id}", json=body,
-            response_type=Webhook,
+            "PUT",
+            f"/v1/webhooks/{id}",
+            json=body,
+            response_type=WebhookSubscription,
         )
 
     async def delete(self, id: str) -> ResponseMeta:
-        """Delete a webhook."""
-        return await self._client._request_empty("DELETE", f"/webhooks/{id}")
+        """Delete a webhook subscription."""
+        return await self._client._request_empty("DELETE", f"/v1/webhooks/{id}")
 
-    async def test(self, id: str) -> ResponseMeta:
-        """Send a test event to a webhook."""
-        return await self._client._request_empty("POST", f"/webhooks/{id}/test")
+    async def test(self, id: str) -> Response[TestDeliveryResponse]:
+        """Send a test delivery to a webhook."""
+        return await self._client._request_model(
+            "POST",
+            f"/v1/webhooks/{id}/test",
+            json={},
+            response_type=TestDeliveryResponse,
+        )
+
+    async def deliveries(
+        self, id: str, *, limit: int | None = None
+    ) -> Response[_list[WebhookDelivery]]:
+        """Get delivery history for a webhook."""
+        params = _build_params({"limit": limit})
+        return await self._client._request_model(
+            "GET",
+            f"/v1/webhooks/{id}/deliveries",
+            params=params or None,
+            response_type=list[WebhookDelivery],
+        )
 
 
 class Webhooks:
@@ -73,26 +116,35 @@ class Webhooks:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def list(self) -> Response[list[Webhook]]:
-        """List all webhooks."""
+    def list(self) -> Response[_list[WebhookSubscription]]:
+        """List all webhook subscriptions."""
         return self._client._request_model(
-            "GET", "/webhooks", response_type=list[Webhook],
+            "GET",
+            "/v1/webhooks",
+            response_type=list[WebhookSubscription],
         )
 
     def create(
-        self, *, url: str, events: list[str]
-    ) -> Response[WebhookCreated]:
-        """Create a new webhook subscription."""
+        self,
+        *,
+        url: str,
+        description: str | None = None,
+        event_filters: _list[str] | None = None,
+        company_filters: _list[str] | None = None,
+    ) -> Response[CreateWebhookResponse]:
+        """Create a webhook subscription."""
+        body: dict[str, Any] = {"url": url}
+        if description is not None:
+            body["description"] = description
+        if event_filters is not None:
+            body["eventFilters"] = event_filters
+        if company_filters is not None:
+            body["companyFilters"] = company_filters
         return self._client._request_model(
-            "POST", "/webhooks",
-            json={"url": url, "events": events},
-            response_type=WebhookCreated,
-        )
-
-    def get(self, id: str) -> Response[Webhook]:
-        """Get a webhook by ID."""
-        return self._client._request_model(
-            "GET", f"/webhooks/{id}", response_type=Webhook,
+            "POST",
+            "/v1/webhooks",
+            json=body,
+            response_type=CreateWebhookResponse,
         )
 
     def update(
@@ -100,26 +152,51 @@ class Webhooks:
         id: str,
         *,
         url: str | None = None,
-        events: list[str] | None = None,
+        description: str | None = None,
+        event_filters: _list[str] | None = None,
+        company_filters: _list[str] | None = None,
         status: str | None = None,
-    ) -> Response[Webhook]:
-        """Update a webhook."""
-        body: dict = {}
+    ) -> Response[WebhookSubscription]:
+        """Update a webhook subscription."""
+        body: dict[str, Any] = {}
         if url is not None:
             body["url"] = url
-        if events is not None:
-            body["events"] = events
+        if description is not None:
+            body["description"] = description
+        if event_filters is not None:
+            body["eventFilters"] = event_filters
+        if company_filters is not None:
+            body["companyFilters"] = company_filters
         if status is not None:
             body["status"] = status
         return self._client._request_model(
-            "PUT", f"/webhooks/{id}", json=body,
-            response_type=Webhook,
+            "PUT",
+            f"/v1/webhooks/{id}",
+            json=body,
+            response_type=WebhookSubscription,
         )
 
     def delete(self, id: str) -> ResponseMeta:
-        """Delete a webhook."""
-        return self._client._request_empty("DELETE", f"/webhooks/{id}")
+        """Delete a webhook subscription."""
+        return self._client._request_empty("DELETE", f"/v1/webhooks/{id}")
 
-    def test(self, id: str) -> ResponseMeta:
-        """Send a test event to a webhook."""
-        return self._client._request_empty("POST", f"/webhooks/{id}/test")
+    def test(self, id: str) -> Response[TestDeliveryResponse]:
+        """Send a test delivery to a webhook."""
+        return self._client._request_model(
+            "POST",
+            f"/v1/webhooks/{id}/test",
+            json={},
+            response_type=TestDeliveryResponse,
+        )
+
+    def deliveries(
+        self, id: str, *, limit: int | None = None
+    ) -> Response[_list[WebhookDelivery]]:
+        """Get delivery history for a webhook."""
+        params = _build_params({"limit": limit})
+        return self._client._request_model(
+            "GET",
+            f"/v1/webhooks/{id}/deliveries",
+            params=params or None,
+            response_type=list[WebhookDelivery],
+        )

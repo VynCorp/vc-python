@@ -7,33 +7,29 @@ import respx
 
 import vynco
 
-BASE_URL = "https://api.vynco.ch/v1"
+BASE_URL = "https://api.vynco.ch"
 
 
-async def test_company_search_parses_paginated_response():
+async def test_company_list_parses_paginated_response():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies").mock(
+        mock.get("/v1/companies").mock(
             return_value=httpx.Response(
                 200,
                 json={
                     "items": [
                         {
-                            "uid": "CHE-100.023.968",
+                            "uid": "CHE-105.805.080",
                             "name": "Novartis AG",
-                            "legalSeat": "Basel",
                             "canton": "BS",
                             "legalForm": "AG",
-                            "status": "ACTIVE",
-                            "purpose": "Pharmaceutical company",
-                            "capitalNominal": 1320000000.0,
-                            "capitalCurrency": "CHF",
-                            "auditorName": "KPMG AG",
-                            "registrationDate": "1996-12-20",
-                            "dataSource": "Zefix",
-                            "lastModified": "2026-01-15T10:30:00Z",
+                            "status": "Active",
+                            "shareCapital": 1000000.0,
+                            "industry": "Pharmaceuticals",
+                            "auditorCategory": "State-regulated",
+                            "updatedAt": "2026-01-15T10:30:00Z",
                         }
                     ],
-                    "total": 1,
+                    "totalCount": 1,
                     "page": 1,
                     "pageSize": 20,
                 },
@@ -48,11 +44,11 @@ async def test_company_search_parses_paginated_response():
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.companies.search(query="Novartis", canton="BS")
+        resp = await client.companies.list(query="Novartis", canton="BS")
 
         assert resp.data.total == 1
         assert len(resp.data.items) == 1
-        assert resp.data.items[0].uid == "CHE-100.023.968"
+        assert resp.data.items[0].uid == "CHE-105.805.080"
         assert resp.data.items[0].name == "Novartis AG"
         assert resp.data.items[0].canton == "BS"
         assert resp.data.items[0].legal_form == "AG"
@@ -64,10 +60,10 @@ async def test_company_search_parses_paginated_response():
         assert resp.meta.data_source == "Zefix"
 
 
-async def test_company_search_with_total_count():
+async def test_company_list_with_total_count():
     """Test that PaginatedResponse accepts 'totalCount' as an alias for 'total'."""
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies").mock(
+        mock.get("/v1/companies").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -80,41 +76,36 @@ async def test_company_search_with_total_count():
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.companies.search()
+        resp = await client.companies.list()
         assert resp.data.total == 42
 
 
 async def test_company_get_by_uid():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies/CHE-100.023.968").mock(
+        mock.get("/v1/companies/CHE-105.805.080").mock(
             return_value=httpx.Response(
                 200,
                 json={
-                    "uid": "CHE-100.023.968",
+                    "uid": "CHE-105.805.080",
                     "name": "Novartis AG",
-                    "legalSeat": "Basel",
                     "canton": "BS",
                     "legalForm": "AG",
-                    "status": "ACTIVE",
-                    "capitalNominal": 1320000000.0,
-                    "capitalCurrency": "CHF",
-                    "dataSource": "Zefix",
-                    "lastModified": "2026-01-15T10:30:00Z",
+                    "status": "Active",
+                    "updatedAt": "2026-01-15T10:30:00Z",
                 },
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.companies.get("CHE-100.023.968")
+        resp = await client.companies.get("CHE-105.805.080")
 
         assert resp.data.name == "Novartis AG"
-        assert resp.data.status == "ACTIVE"
-        assert resp.data.capital_nominal == 1_320_000_000.0
+        assert resp.data.status == "Active"
 
 
 async def test_company_count():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies/count").mock(
+        mock.get("/v1/companies/count").mock(
             return_value=httpx.Response(200, json={"count": 320000})
         )
 
@@ -123,84 +114,73 @@ async def test_company_count():
         assert resp.data.count == 320000
 
 
-async def test_company_persons():
+async def test_company_statistics():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies/CHE-100.023.968/persons").mock(
+        mock.get("/v1/companies/statistics").mock(
             return_value=httpx.Response(
                 200,
-                json=[
-                    {
-                        "personId": "p-001",
-                        "firstName": "Vasant",
-                        "lastName": "Narasimhan",
-                        "role": "CEO",
-                        "since": "2018-02-01",
-                    }
-                ],
+                json={
+                    "total": 320000,
+                    "byStatus": {"Active": 280000, "Dissolved": 40000},
+                    "byCanton": {"ZH": 50000, "BS": 15000},
+                    "byLegalForm": {"AG": 120000, "GmbH": 80000},
+                },
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.companies.persons("CHE-100.023.968")
-
-        assert len(resp.data) == 1
-        assert resp.data[0].first_name == "Vasant"
-        assert resp.data[0].role == "CEO"
+        resp = await client.companies.statistics()
+        assert resp.data.total == 320000
 
 
-async def test_company_changes():
+async def test_company_compare():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies/CHE-100.023.968/changes").mock(
+        mock.post("/v1/companies/compare").mock(
             return_value=httpx.Response(
                 200,
-                json=[
-                    {
-                        "id": "c-001",
-                        "companyUid": "CHE-100.023.968",
-                        "changeType": "AUDITOR_CHANGE",
-                        "fieldName": "auditorName",
-                        "oldValue": "PwC AG",
-                        "newValue": "KPMG AG",
-                        "detectedAt": "2026-01-15T10:30:00Z",
-                    }
-                ],
+                json={
+                    "uids": ["CHE-105.805.080", "CHE-109.340.740"],
+                    "names": ["Novartis AG", "Roche Holding AG"],
+                    "dimensions": [
+                        {"field": "canton", "label": "Canton", "values": ["BS", "BS"]},
+                    ],
+                },
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.companies.changes("CHE-100.023.968")
-
-        assert len(resp.data) == 1
-        assert resp.data[0].change_type == "AUDITOR_CHANGE"
-        assert resp.data[0].new_value == "KPMG AG"
+        resp = await client.companies.compare(["CHE-105.805.080", "CHE-109.340.740"])
+        assert len(resp.data.uids) == 2
+        assert resp.data.names[0] == "Novartis AG"
 
 
-async def test_company_search_sends_query_as_search_param():
+async def test_company_list_sends_query_as_search_param():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/companies").mock(
+        route = mock.get("/v1/companies").mock(
             return_value=httpx.Response(
-                200, json={"items": [], "total": 0, "page": 1, "pageSize": 20},
+                200,
+                json={"items": [], "totalCount": 0, "page": 1, "pageSize": 20},
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        await client.companies.search(query="Novartis")
+        await client.companies.list(query="Novartis")
 
         assert route.called
         request = route.calls[0].request
         assert "search=Novartis" in str(request.url)
 
 
-def test_sync_company_search():
+def test_sync_company_list():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/companies").mock(
+        mock.get("/v1/companies").mock(
             return_value=httpx.Response(
                 200,
                 json={
                     "items": [
-                        {"uid": "CHE-100.023.968", "name": "Novartis AG", "canton": "BS"}
+                        {"uid": "CHE-105.805.080", "name": "Novartis AG", "canton": "BS"}
                     ],
-                    "total": 1,
+                    "totalCount": 1,
                     "page": 1,
                     "pageSize": 20,
                 },
@@ -208,5 +188,5 @@ def test_sync_company_search():
         )
 
         client = vynco.Client("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = client.companies.search(query="Novartis")
+        resp = client.companies.list(query="Novartis")
         assert resp.data.items[0].name == "Novartis AG"

@@ -3,21 +3,15 @@ from __future__ import annotations
 from vynco.types.shared import VyncoModel
 
 
-class PersonRole(VyncoModel):
-    """A person's role within a company."""
-
-    person_id: str
-    first_name: str = ""
-    last_name: str = ""
-    role: str = ""
-    since: str | None = None
-    until: str | None = None
-
-
-class Person(VyncoModel):
-    """A person with their associated company roles."""
+class BoardMember(VyncoModel):
+    """A board member of a company."""
 
     id: str
-    first_name: str = ""
-    last_name: str = ""
-    roles: list[PersonRole] = []
+    first_name: str | None = None
+    last_name: str | None = None
+    role: str = ""
+    role_category: str = ""
+    origin: str | None = None
+    residence: str | None = None
+    signing_authority: str | None = None
+    since: str | None = None

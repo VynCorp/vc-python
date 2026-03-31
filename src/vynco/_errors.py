@@ -35,8 +35,16 @@ class RateLimitError(VyncoError):
     """429 — Too many requests."""
 
 
+class ConflictError(VyncoError):
+    """409 — Request conflicts with existing state."""
+
+
 class ServerError(VyncoError):
     """5xx — Server-side error."""
+
+
+class ServiceUnavailableError(ServerError):
+    """503 — API temporarily unavailable."""
 
 
 class ConfigError(VyncoError):
@@ -48,11 +56,13 @@ class DeserializationError(VyncoError):
 
 
 STATUS_ERROR_MAP: dict[int, type[VyncoError]] = {
+    400: ValidationError,
     401: AuthenticationError,
     402: InsufficientCreditsError,
     403: ForbiddenError,
     404: NotFoundError,
-    400: ValidationError,
+    409: ConflictError,
     422: ValidationError,
     429: RateLimitError,
+    503: ServiceUnavailableError,
 }

@@ -1,6 +1,6 @@
 # vynco
 
-Python SDK for the [VynCo](https://vynco.ch) Swiss Corporate Intelligence API.
+Python SDK for the [VynCo](https://vynco.ch) Swiss Corporate Intelligence API. Access 500,000+ Swiss companies from the commercial register with change tracking, sanctions screening, AI-powered risk analysis, network graphs, watchlists, webhooks, and bulk data exports.
 
 ## Installation
 
@@ -21,19 +21,25 @@ import vynco
 
 client = vynco.Client("vc_live_your_api_key")
 
-# Search companies
-result = client.companies.search(query="Novartis", canton="BS")
-for company in result.data.items:
-    print(f"{company.name} ({company.uid}) - {company.status}")
+# List companies with filtering
+result = client.companies.list(query="Novartis", canton="BS")
+print(f"Found {result.data.total} companies")
 
-# Get company details
-company = client.companies.get("CHE-100.023.968")
-print(f"{company.data.name}: {company.data.purpose}")
+# Get a single company
+company = client.companies.get("CHE-105.805.080")
+print(f"{company.data.name}: {company.data.legal_form}")
 
-# Check credit balance
-balance = client.credits.balance()
-print(f"Balance: {balance.data.balance} credits")
-print(f"Credits used: {result.meta.credits_used}")
+# Sanctions screening
+screening = client.screening.screen(name="Suspicious Corp")
+print(f"Risk: {screening.data.risk_level} ({screening.data.hit_count} hits)")
+
+# AI risk score
+risk = client.ai.risk_score(uid="CHE-105.805.080")
+print(f"Risk score: {risk.data.overall_score}/100 ({risk.data.risk_level})")
+
+# Credit balance
+credits = client.credits.balance()
+print(f"Credits remaining: {credits.data.balance}")
 ```
 
 ## Async Usage
@@ -43,42 +49,47 @@ import vynco
 
 async def main():
     async with vynco.AsyncClient("vc_live_your_api_key") as client:
-        result = await client.companies.search(query="Novartis")
+        result = await client.companies.list(query="Novartis")
         print(result.data.items[0].name)
-
-        balance = await client.credits.balance()
-        print(f"Balance: {balance.data.balance}")
 ```
 
-## Resources
+## API Coverage
+
+18 resource modules covering 69 endpoints:
 
 | Resource | Methods |
 |----------|---------|
-| `client.companies` | `search`, `get`, `count`, `statistics`, `compare`, `persons`, `dossier`, `relationships`, `hierarchy`, `changes`, `batch_get`, `news` |
-| `client.persons` | `get`, `search` |
-| `client.dossiers` | `generate` |
-| `client.changes` | `list`, `by_company`, `statistics` |
-| `client.credits` | `balance`, `usage`, `history` |
+| `client.health` | `check` |
+| `client.companies` | `list`, `get`, `count`, `events`, `statistics`, `compare`, `news`, `reports`, `relationships`, `hierarchy`, `fingerprint`, `nearby` |
+| `client.auditors` | `history`, `tenures` |
+| `client.dashboard` | `get` |
+| `client.screening` | `screen` |
+| `client.watchlists` | `list`, `create`, `delete`, `companies`, `add_companies`, `remove_company`, `events` |
+| `client.webhooks` | `list`, `create`, `update`, `delete`, `test`, `deliveries` |
+| `client.exports` | `create`, `get`, `download` |
+| `client.ai` | `dossier`, `search`, `risk_score` |
 | `client.api_keys` | `list`, `create`, `revoke` |
+| `client.credits` | `balance`, `usage`, `history` |
 | `client.billing` | `create_checkout`, `create_portal` |
-| `client.webhooks` | `list`, `create`, `get`, `update`, `delete`, `test` |
-| `client.teams` | `me`, `create` |
-| `client.users` | `me`, `update_profile` |
-| `client.settings` | `get`, `update` |
-| `client.analytics` | `cantons`, `auditors`, `rfm_segments`, `velocity` |
+| `client.teams` | `me`, `create`, `members`, `invite_member`, `update_member_role`, `remove_member`, `billing_summary` |
+| `client.changes` | `list`, `by_company`, `statistics` |
+| `client.persons` | `board_members` |
+| `client.analytics` | `cantons`, `auditors`, `cluster`, `anomalies`, `rfm_segments`, `cohorts`, `candidates` |
+| `client.dossiers` | `create`, `list`, `get`, `delete` |
+| `client.graph` | `get`, `export`, `analyze` |
 
 ## Response Metadata
 
-Every response includes header metadata:
+Every response includes header metadata for credit tracking and rate limiting:
 
 ```python
-resp = client.companies.get("CHE-100.023.968")
+resp = client.companies.get("CHE-105.805.080")
 
-print(f"Request ID: {resp.meta.request_id}")
-print(f"Credits used: {resp.meta.credits_used}")
-print(f"Credits remaining: {resp.meta.credits_remaining}")
-print(f"Rate limit: {resp.meta.rate_limit_limit}")
-print(f"Data source: {resp.meta.data_source}")  # "Zefix" or "LINDAS"
+print(f"Request ID: {resp.meta.request_id}")          # X-Request-Id
+print(f"Credits used: {resp.meta.credits_used}")       # X-Credits-Used
+print(f"Credits remaining: {resp.meta.credits_remaining}")  # X-Credits-Remaining
+print(f"Rate limit: {resp.meta.rate_limit_limit}")     # X-Rate-Limit-Limit
+print(f"Data source: {resp.meta.data_source}")         # X-Data-Source
 ```
 
 ## Configuration
@@ -86,9 +97,9 @@ print(f"Data source: {resp.meta.data_source}")  # "Zefix" or "LINDAS"
 ```python
 client = vynco.Client(
     api_key="vc_live_xxx",
-    base_url="https://api.vynco.ch/v1",  # default
-    timeout=30.0,                          # seconds, default
-    max_retries=2,                         # default, retries on 429/5xx
+    base_url="https://api.vynco.ch",  # default
+    timeout=30.0,                      # seconds, default
+    max_retries=2,                     # default, retries on 429/5xx
 )
 ```
 
@@ -102,19 +113,32 @@ export VYNCO_API_KEY=vc_live_your_api_key
 client = vynco.Client()  # reads from VYNCO_API_KEY
 ```
 
+The client automatically retries on HTTP 429 (rate limited) and 5xx (server error) with
+exponential backoff (500ms x 2^attempt). It respects the `Retry-After` header when present.
+
 ## Error Handling
+
+All API errors are mapped to typed exceptions:
 
 ```python
 try:
     company = client.companies.get("CHE-000.000.000")
-except vynco.NotFoundError as e:
-    print(f"Not found: {e.detail}")
-except vynco.RateLimitError:
-    print("Rate limited, try again later")
+except vynco.AuthenticationError:
+    print("Invalid API key")
 except vynco.InsufficientCreditsError:
     print("Top up credits")
-except vynco.AuthenticationError:
-    print("Check your API key")
+except vynco.ForbiddenError:
+    print("Insufficient permissions")
+except vynco.NotFoundError as e:
+    print(f"Not found: {e.detail}")
+except vynco.ValidationError as e:
+    print(f"Bad request: {e.detail}")
+except vynco.ConflictError:
+    print("Resource conflict")
+except vynco.RateLimitError:
+    print("Rate limited, retry later")
+except vynco.ServerError:
+    print("Server error")
 except vynco.VyncoError as e:
     print(f"Error ({e.status}): {e.detail}")
 ```
@@ -125,9 +149,11 @@ except vynco.VyncoError as e:
 | `InsufficientCreditsError` | 402 |
 | `ForbiddenError` | 403 |
 | `NotFoundError` | 404 |
+| `ConflictError` | 409 |
 | `ValidationError` | 400, 422 |
 | `RateLimitError` | 429 |
 | `ServerError` | 5xx |
+| `ServiceUnavailableError` | 503 |
 | `ConfigError` | — (client misconfiguration) |
 
 ## Requirements
