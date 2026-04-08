@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import Field
+
 from vynco.types.shared import VyncoModel
 
 
@@ -14,8 +16,38 @@ class Company(VyncoModel):
     status: str | None = None
     legal_form: str | None = None
     share_capital: float | None = None
+    currency: str | None = None
+    purpose: str | None = None
+    founding_date: str | None = None
+    registration_date: str | None = None
+    deletion_date: str | None = None
+    legal_seat: str | None = None
+    municipality: str | None = None
+    data_source: str | None = None
+    enrichment_level: str | None = None
+    address_street: str | None = None
+    address_house_number: str | None = None
+    address_zip_code: str | None = None
+    address_city: str | None = None
+    address_canton: str | None = None
+    website: str | None = None
     industry: str | None = None
+    sub_industry: str | None = None
+    employee_count: int | None = None
+    auditor_name: str | None = None
     auditor_category: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    geo_precision: str | None = None
+    noga_code: str | None = None
+    sanctions_hit: bool | None = None
+    last_screened_at: str | None = None
+    is_finma_regulated: bool | None = None
+    ehraid: int | None = None
+    chid: str | None = None
+    cantonal_excerpt_url: str | None = None
+    old_names: list[str] | None = None
+    translations: list[str] | None = None
     updated_at: str | None = None
 
 
@@ -82,7 +114,7 @@ class NewsItem(VyncoModel):
     source: str | None = None
     source_type: str = ""
     published_at: str = ""
-    url: str | None = None
+    url: str | None = Field(None, alias="sourceUrl")
 
 
 class CompanyReport(VyncoModel):
@@ -146,3 +178,118 @@ class NearbyCompany(VyncoModel):
     distance: float = 0.0
     latitude: float = 0.0
     longitude: float = 0.0
+
+
+class Classification(VyncoModel):
+    """Industry classification for a company."""
+
+    company_uid: str = ""
+    sector_code: str | None = None
+    sector_name: str | None = None
+    group_code: str | None = None
+    group_name: str | None = None
+    industry_code: str | None = None
+    industry_name: str | None = None
+    sub_industry_code: str | None = None
+    sub_industry_name: str | None = None
+    method: str = ""
+    classified_at: str = ""
+    auditor_category: str | None = None
+    is_finma_regulated: bool = False
+
+
+class RelatedCompanyEntry(VyncoModel):
+    """A related company entry in a corporate structure."""
+
+    uid: str = ""
+    name: str = ""
+
+
+class CorporateStructure(VyncoModel):
+    """Corporate structure showing head offices, branches, and M&A relationships."""
+
+    head_offices: list[RelatedCompanyEntry] = []
+    branch_offices: list[RelatedCompanyEntry] = []
+    acquisitions: list[RelatedCompanyEntry] = []
+    acquired_by: list[RelatedCompanyEntry] = []
+
+
+class Acquisition(VyncoModel):
+    """An M&A relationship record."""
+
+    acquirer_uid: str = ""
+    acquired_uid: str = ""
+    acquirer_name: str | None = None
+    acquired_name: str | None = None
+    created_at: str = ""
+
+
+class Note(VyncoModel):
+    """A user note on a company."""
+
+    id: str
+    company_uid: str = ""
+    content: str = ""
+    note_type: str = ""
+    rating: int | None = None
+    is_private: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class Tag(VyncoModel):
+    """A user tag on a company."""
+
+    id: str
+    company_uid: str = ""
+    tag_name: str = ""
+    color: str | None = None
+    created_at: str = ""
+
+
+class TagSummary(VyncoModel):
+    """Summary of a user's tag usage across companies."""
+
+    tag_name: str = ""
+    count: int = 0
+
+
+class PersonEntry(VyncoModel):
+    """A person entry in a company's full response."""
+
+    person_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    role: str = ""
+    since: str | None = None
+    until: str | None = None
+
+
+class ChangeEntry(VyncoModel):
+    """A recent change entry in a company's full response."""
+
+    id: str
+    company_uid: str = ""
+    change_type: str | None = None
+    field_name: str | None = None
+    old_value: str | None = None
+    new_value: str | None = None
+    detected_at: str = ""
+    source_date: str | None = None
+
+
+class RelationshipEntry(VyncoModel):
+    """A relationship entry in a company's full response."""
+
+    related_uid: str = ""
+    related_name: str | None = None
+    relationship_type: str = ""
+
+
+class CompanyFullResponse(VyncoModel):
+    """Full company details with persons, changes, and relationships."""
+
+    company: Company
+    persons: list[PersonEntry] = []
+    recent_changes: list[ChangeEntry] = []
+    relationships: list[RelationshipEntry] = []

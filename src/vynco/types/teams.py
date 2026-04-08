@@ -53,3 +53,11 @@ class BillingSummary(VyncoModel):
     monthly_credits: int = 0
     used_this_month: int = 0
     members: list[MemberUsage] = []
+
+
+class JoinTeamResponse(VyncoModel):
+    """Response from joining a team."""
+
+    team_id: str = ""
+    team_name: str = ""
+    role: str = ""

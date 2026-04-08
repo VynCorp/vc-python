@@ -26,10 +26,21 @@ class AuditorHistoryResponse(VyncoModel):
     history: list[AuditorTenure] = []
 
 
+class LongestTenure(VyncoModel):
+    """The longest current auditor tenure."""
+
+    company_uid: str = ""
+    company_name: str = ""
+    auditor_name: str = ""
+    tenure_years: float = 0.0
+
+
 class AuditorTenureStats(VyncoModel):
     """Auditor tenure aggregate statistics."""
 
-    total_tenures: int = 0
-    long_tenures_7plus: int = 0
+    total_tracked: int = 0
+    current_auditors: int = 0
+    tenures_over_10_years: int = 0
+    tenures_over_7_years: int = 0
     avg_tenure_years: float = 0.0
-    max_tenure_years: float = 0.0
+    longest_tenure: LongestTenure | None = None

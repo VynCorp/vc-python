@@ -7,7 +7,7 @@ import httpx
 
 from vynco._base_client import BaseClientConfig
 from vynco._constants import DEFAULT_BASE_URL, DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT
-from vynco._response import Response, ResponseMeta
+from vynco._response import ExportFile, Response, ResponseMeta
 from vynco.resources.ai import Ai, AsyncAi
 from vynco.resources.analytics import Analytics, AsyncAnalytics
 from vynco.resources.api_keys import ApiKeys, AsyncApiKeys
@@ -138,6 +138,17 @@ class AsyncClient(BaseClientConfig):
         resp = await self._request(method, path, params=params, json=json)
         return self._handle_empty_response(resp)
 
+    async def _request_bytes(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, str] | None = None,
+        json: Any = None,
+    ) -> ExportFile:
+        resp = await self._request(method, path, params=params, json=json)
+        return self._handle_bytes_response(resp)
+
     async def close(self) -> None:
         await self._http.aclose()
 
@@ -256,6 +267,17 @@ class Client(BaseClientConfig):
     ) -> ResponseMeta:
         resp = self._request(method, path, params=params, json=json)
         return self._handle_empty_response(resp)
+
+    def _request_bytes(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, str] | None = None,
+        json: Any = None,
+    ) -> ExportFile:
+        resp = self._request(method, path, params=params, json=json)
+        return self._handle_bytes_response(resp)
 
     def close(self) -> None:
         self._http.close()

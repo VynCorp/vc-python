@@ -8,23 +8,21 @@ class DataCompleteness(VyncoModel):
     """Data completeness metrics."""
 
     total_companies: int = 0
-    with_canton: int = 0
-    with_status: int = 0
-    with_legal_form: int = 0
-    with_capital: int = 0
-    with_industry: int = 0
-    with_auditor: int = 0
-    completeness_pct: float = 0.0
+    enriched_companies: int = 0
+    companies_with_industry: int = 0
+    companies_with_geo: int = 0
+    total_persons: int = 0
+    total_changes: int = 0
+    total_sogc_publications: int = 0
 
 
 class PipelineStatus(VyncoModel):
     """Pipeline run status."""
 
-    name: str
-    last_run: str | None = None
+    id: str
     status: str = ""
-    records_processed: int | None = None
-    duration_seconds: float | None = None
+    items_processed: int = 0
+    last_completed_at: str | None = None
 
 
 class DashboardResponse(VyncoModel):

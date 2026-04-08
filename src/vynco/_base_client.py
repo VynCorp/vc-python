@@ -14,7 +14,7 @@ from vynco._errors import (
     ServerError,
     VyncoError,
 )
-from vynco._response import Response, ResponseMeta
+from vynco._response import ExportFile, Response, ResponseMeta
 
 T = TypeVar("T")
 
@@ -41,7 +41,9 @@ def _parse_meta(headers: httpx.Headers) -> ResponseMeta:
         request_id=headers.get("X-Request-Id"),
         credits_used=_parse_int(headers.get("X-Credits-Used")),
         credits_remaining=_parse_int(headers.get("X-Credits-Remaining")),
-        rate_limit_limit=_parse_int(headers.get("X-Rate-Limit-Limit")),
+        rate_limit_limit=_parse_int(headers.get("X-RateLimit-Limit")),
+        rate_limit_remaining=_parse_int(headers.get("X-RateLimit-Remaining")),
+        rate_limit_reset=_parse_int(headers.get("X-RateLimit-Reset")),
         data_source=headers.get("X-Data-Source"),
     )
 
@@ -142,10 +144,10 @@ class BaseClientConfig:
     def _retry_delay(self, attempt: int, headers: httpx.Headers | None = None) -> float:
         """Compute retry delay with exponential backoff, respecting Retry-After."""
         if headers:
-            retry_after = headers.get("Retry-After")
+            retry_after = headers.get("Retry-After") or headers.get("X-RateLimit-Reset")
             if retry_after:
                 try:
-                    return float(retry_after)
+                    return min(float(retry_after), 60.0)
                 except ValueError:
                     pass
         return 0.5 * float(2**attempt)
@@ -187,3 +189,25 @@ class BaseClientConfig:
                 body = {"detail": resp.text, "status": resp.status_code}
             raise _map_error(resp.status_code, body)
         return meta
+
+    def _handle_bytes_response(self, resp: httpx.Response) -> ExportFile:
+        meta = _parse_meta(resp.headers)
+        if not resp.is_success:
+            try:
+                body = resp.json()
+            except Exception:
+                body = {"detail": resp.text, "status": resp.status_code}
+            raise _map_error(resp.status_code, body)
+
+        content_type = resp.headers.get("content-type", "application/octet-stream")
+        filename = ""
+        disposition = resp.headers.get("content-disposition", "")
+        if "filename=" in disposition:
+            filename = disposition.split("filename=")[1].strip('"')
+
+        return ExportFile(
+            meta=meta,
+            bytes=resp.content,
+            content_type=content_type,
+            filename=filename,
+        )

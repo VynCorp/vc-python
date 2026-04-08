@@ -7,7 +7,7 @@ import respx
 
 import vynco
 
-BASE_URL = "https://api.vynco.ch"
+BASE_URL = "https://vynco.ch/api"
 
 
 # ---------------------------------------------------------------------------

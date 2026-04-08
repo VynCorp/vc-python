@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from vynco._response import Response
+from vynco._response import ExportFile, Response
 from vynco.types.exports import ExportDownload, ExportJob
 
 if TYPE_CHECKING:
@@ -54,12 +54,11 @@ class AsyncExports:
             response_type=ExportDownload,
         )
 
-    async def download(self, id: str) -> Response[bytes]:
-        """Download an export file as raw bytes."""
-        return await self._client._request_model(
+    async def download(self, id: str) -> ExportFile:
+        """Download an export file."""
+        return await self._client._request_bytes(
             "GET",
             f"/v1/exports/{id}/download",
-            response_type=bytes,
         )
 
 
@@ -108,10 +107,9 @@ class Exports:
             response_type=ExportDownload,
         )
 
-    def download(self, id: str) -> Response[bytes]:
-        """Download an export file as raw bytes."""
-        return self._client._request_model(
+    def download(self, id: str) -> ExportFile:
+        """Download an export file."""
+        return self._client._request_bytes(
             "GET",
             f"/v1/exports/{id}/download",
-            response_type=bytes,
         )

@@ -4,7 +4,7 @@ import builtins
 from typing import TYPE_CHECKING, Any
 
 from vynco._response import Response, ResponseMeta
-from vynco.types.teams import BillingSummary, Invitation, Team, TeamMember
+from vynco.types.teams import BillingSummary, Invitation, JoinTeamResponse, Team, TeamMember
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
@@ -87,6 +87,15 @@ class AsyncTeams:
             response_type=BillingSummary,
         )
 
+    async def join(self, *, token: str) -> Response[JoinTeamResponse]:
+        """Join a team via invitation token."""
+        return await self._client._request_model(
+            "POST",
+            "/v1/teams/join",
+            json={"token": token},
+            response_type=JoinTeamResponse,
+        )
+
 
 class Teams:
     """Sync team operations."""
@@ -161,4 +170,13 @@ class Teams:
             "GET",
             "/v1/teams/me/billing-summary",
             response_type=BillingSummary,
+        )
+
+    def join(self, *, token: str) -> Response[JoinTeamResponse]:
+        """Join a team via invitation token."""
+        return self._client._request_model(
+            "POST",
+            "/v1/teams/join",
+            json={"token": token},
+            response_type=JoinTeamResponse,
         )

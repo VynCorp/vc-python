@@ -29,6 +29,10 @@ print(f"Found {result.data.total} companies")
 company = client.companies.get("CHE-105.805.080")
 print(f"{company.data.name}: {company.data.legal_form}")
 
+# Full company details with persons, changes, relationships
+full = client.companies.get_full("CHE-105.805.080")
+print(f"Board: {len(full.data.persons)} persons")
+
 # Sanctions screening
 screening = client.screening.screen(name="Suspicious Corp")
 print(f"Risk: {screening.data.risk_level} ({screening.data.hit_count} hits)")
@@ -55,12 +59,12 @@ async def main():
 
 ## API Coverage
 
-18 resource modules covering 69 endpoints:
+18 resource modules covering 90+ endpoints:
 
 | Resource | Methods |
 |----------|---------|
 | `client.health` | `check` |
-| `client.companies` | `list`, `get`, `count`, `events`, `statistics`, `compare`, `news`, `reports`, `relationships`, `hierarchy`, `fingerprint`, `nearby` |
+| `client.companies` | `list`, `get`, `get_full`, `count`, `events`, `statistics`, `compare`, `news`, `reports`, `relationships`, `hierarchy`, `classification`, `fingerprint`, `structure`, `acquisitions`, `nearby`, `notes`, `create_note`, `update_note`, `delete_note`, `tags`, `create_tag`, `delete_tag`, `all_tags`, `export_excel` |
 | `client.auditors` | `history`, `tenures` |
 | `client.dashboard` | `get` |
 | `client.screening` | `screen` |
@@ -71,11 +75,11 @@ async def main():
 | `client.api_keys` | `list`, `create`, `revoke` |
 | `client.credits` | `balance`, `usage`, `history` |
 | `client.billing` | `create_checkout`, `create_portal` |
-| `client.teams` | `me`, `create`, `members`, `invite_member`, `update_member_role`, `remove_member`, `billing_summary` |
+| `client.teams` | `me`, `create`, `members`, `invite_member`, `update_member_role`, `remove_member`, `billing_summary`, `join` |
 | `client.changes` | `list`, `by_company`, `statistics` |
-| `client.persons` | `board_members` |
+| `client.persons` | `board_members`, `search`, `get` |
 | `client.analytics` | `cantons`, `auditors`, `cluster`, `anomalies`, `rfm_segments`, `cohorts`, `candidates` |
-| `client.dossiers` | `create`, `list`, `get`, `delete` |
+| `client.dossiers` | `create`, `list`, `get`, `delete`, `generate` |
 | `client.graph` | `get`, `export`, `analyze` |
 
 ## Response Metadata
@@ -85,11 +89,13 @@ Every response includes header metadata for credit tracking and rate limiting:
 ```python
 resp = client.companies.get("CHE-105.805.080")
 
-print(f"Request ID: {resp.meta.request_id}")          # X-Request-Id
-print(f"Credits used: {resp.meta.credits_used}")       # X-Credits-Used
+print(f"Request ID: {resp.meta.request_id}")               # X-Request-Id
+print(f"Credits used: {resp.meta.credits_used}")            # X-Credits-Used
 print(f"Credits remaining: {resp.meta.credits_remaining}")  # X-Credits-Remaining
-print(f"Rate limit: {resp.meta.rate_limit_limit}")     # X-Rate-Limit-Limit
-print(f"Data source: {resp.meta.data_source}")         # X-Data-Source
+print(f"Rate limit: {resp.meta.rate_limit_limit}")          # X-RateLimit-Limit
+print(f"Rate remaining: {resp.meta.rate_limit_remaining}")  # X-RateLimit-Remaining
+print(f"Rate reset: {resp.meta.rate_limit_reset}")          # X-RateLimit-Reset
+print(f"Data source: {resp.meta.data_source}")              # X-Data-Source
 ```
 
 ## Configuration
@@ -97,9 +103,9 @@ print(f"Data source: {resp.meta.data_source}")         # X-Data-Source
 ```python
 client = vynco.Client(
     api_key="vc_live_xxx",
-    base_url="https://api.vynco.ch",  # default
-    timeout=30.0,                      # seconds, default
-    max_retries=2,                     # default, retries on 429/5xx
+    base_url="https://vynco.ch/api",  # default
+    timeout=30.0,                     # seconds, default
+    max_retries=2,                    # default, retries on 429/5xx
 )
 ```
 
@@ -114,7 +120,7 @@ client = vynco.Client()  # reads from VYNCO_API_KEY
 ```
 
 The client automatically retries on HTTP 429 (rate limited) and 5xx (server error) with
-exponential backoff (500ms x 2^attempt). It respects the `Retry-After` header when present.
+exponential backoff (500ms x 2^attempt). It respects the `Retry-After` and `X-RateLimit-Reset` headers when present.
 
 ## Error Handling
 

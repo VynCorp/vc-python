@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-04-08
+
+### Changed
+
+- **Breaking**: Base URL changed from `https://api.vynco.ch` to `https://vynco.ch/api` — matches the Rust reference SDK
+- **Breaking**: Response header names changed — `X-Rate-Limit-Limit` → `X-RateLimit-Limit` (matching Rust SDK)
+- **Breaking**: `DashboardResponse.data` model changed — `DataCompleteness` fields updated to `total_companies`, `enriched_companies`, `companies_with_industry`, `companies_with_geo`, `total_persons`, `total_changes`, `total_sogc_publications`
+- **Breaking**: `PipelineStatus` model changed — `name` → `id`, `records_processed` → `items_processed`, `duration_seconds` removed
+- **Breaking**: `AuditorTenureStats` model rewritten — fields now `total_tracked`, `current_auditors`, `tenures_over_10_years`, `tenures_over_7_years`, `avg_tenure_years`, `longest_tenure`
+- **Breaking**: `exports.download()` and `graph.export()` now return `ExportFile` dataclass (with `bytes`, `content_type`, `filename`, `meta`) instead of `Response[bytes]`
+- **Company** model expanded with 25+ new fields: `currency`, `purpose`, `founding_date`, `registration_date`, `deletion_date`, `legal_seat`, `municipality`, `data_source`, `enrichment_level`, `address_street`, `address_house_number`, `address_zip_code`, `address_city`, `address_canton`, `website`, `sub_industry`, `employee_count`, `auditor_name`, `latitude`, `longitude`, `geo_precision`, `noga_code`, `sanctions_hit`, `last_screened_at`, `is_finma_regulated`, `ehraid`, `chid`, `cantonal_excerpt_url`, `old_names`, `translations`
+- `companies.list()` now accepts `status`, `legal_form`, `capital_min`, `capital_max`, `auditor_category`, `sort_by`, `sort_desc` filter parameters
+
+### Added
+
+- **`ResponseMeta.rate_limit_remaining`** — remaining requests in rate limit window (`X-RateLimit-Remaining`)
+- **`ResponseMeta.rate_limit_reset`** — Unix timestamp when rate limit resets (`X-RateLimit-Reset`)
+- **`ExportFile`** dataclass — returned by file download endpoints (`exports.download()`, `graph.export()`, `companies.export_excel()`)
+- **`companies.get_full(uid)`** — full company details with persons, changes, relationships
+- **`companies.classification(uid)`** — industry classification
+- **`companies.structure(uid)`** — corporate structure (head offices, branches, M&A)
+- **`companies.acquisitions(uid)`** — M&A relationships
+- **`companies.notes(uid)`**, **`create_note()`**, **`update_note()`**, **`delete_note()`** — company notes CRUD
+- **`companies.tags(uid)`**, **`create_tag()`**, **`delete_tag()`**, **`all_tags()`** — company tags CRUD
+- **`companies.export_excel()`** — Excel/CSV export of companies
+- **`persons.search(q, page, page_size)`** — search persons by name
+- **`persons.get(id)`** — get person detail with all roles
+- **`teams.join(token)`** — join a team via invitation token
+- **`dossiers.generate(uid)`** — generate a dossier for a company
+- New typed models: `CompanyFullResponse`, `PersonEntry`, `ChangeEntry`, `RelationshipEntry`, `Classification`, `CorporateStructure`, `RelatedCompanyEntry`, `Acquisition`, `Note`, `Tag`, `TagSummary`, `PersonSearchResult`, `PersonDetail`, `PersonRoleDetail`, `JoinTeamResponse`, `LongestTenure`
+- Retry logic now respects `X-RateLimit-Reset` header in addition to `Retry-After`
+
 ## [2.0.0] - 2026-03-31
 
 ### Changed

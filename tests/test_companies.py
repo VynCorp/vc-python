@@ -7,7 +7,7 @@ import respx
 
 import vynco
 
-BASE_URL = "https://api.vynco.ch"
+BASE_URL = "https://vynco.ch/api"
 
 
 async def test_company_list_parses_paginated_response():
@@ -37,7 +37,7 @@ async def test_company_list_parses_paginated_response():
                     "X-Request-Id": "req-abc-123",
                     "X-Credits-Used": "1",
                     "X-Credits-Remaining": "499",
-                    "X-Rate-Limit-Limit": "60",
+                    "X-RateLimit-Limit": "60",
                     "X-Data-Source": "Zefix",
                 },
             )

@@ -55,6 +55,15 @@ class AsyncDossiers:
         """Delete a dossier."""
         return await self._client._request_empty("DELETE", f"/v1/dossiers/{id}")
 
+    async def generate(self, uid: str) -> Response[Dossier]:
+        """Generate a dossier for a company."""
+        return await self._client._request_model(
+            "POST",
+            f"/v1/dossiers/{uid}/generate",
+            json={},
+            response_type=Dossier,
+        )
+
 
 class Dossiers:
     """Sync dossier operations."""
@@ -98,3 +107,12 @@ class Dossiers:
     def delete(self, id: str) -> ResponseMeta:
         """Delete a dossier."""
         return self._client._request_empty("DELETE", f"/v1/dossiers/{id}")
+
+    def generate(self, uid: str) -> Response[Dossier]:
+        """Generate a dossier for a company."""
+        return self._client._request_model(
+            "POST",
+            f"/v1/dossiers/{uid}/generate",
+            json={},
+            response_type=Dossier,
+        )

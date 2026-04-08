@@ -20,10 +20,16 @@ class ResponseMeta:
     """Remaining credit balance after this request (X-Credits-Remaining)."""
 
     rate_limit_limit: int | None = None
-    """Maximum requests per minute for the current tier (X-Rate-Limit-Limit)."""
+    """Maximum requests per minute for the current tier (X-RateLimit-Limit)."""
+
+    rate_limit_remaining: int | None = None
+    """Remaining requests in the current rate limit window (X-RateLimit-Remaining)."""
+
+    rate_limit_reset: int | None = None
+    """Unix timestamp when the rate limit window resets (X-RateLimit-Reset)."""
 
     data_source: str | None = None
-    """Data source for OGD compliance (X-Data-Source): "Zefix" or "LINDAS"."""
+    """Data source attribution (X-Data-Source)."""
 
 
 @dataclass
@@ -32,3 +38,13 @@ class Response(Generic[T]):
 
     data: T
     meta: ResponseMeta = field(default_factory=ResponseMeta)
+
+
+@dataclass
+class ExportFile:
+    """Downloaded export file with raw bytes and metadata."""
+
+    meta: ResponseMeta
+    bytes: bytes
+    content_type: str
+    filename: str

@@ -8,7 +8,7 @@ import respx
 
 import vynco
 
-BASE_URL = "https://api.vynco.ch"
+BASE_URL = "https://vynco.ch/api"
 
 
 # ---------------------------------------------------------------------------
@@ -40,7 +40,7 @@ def test_custom_base_url():
 
 def test_default_base_url():
     client = vynco.Client("vc_test_key")
-    assert client.base_url == "https://api.vynco.ch"
+    assert client.base_url == "https://vynco.ch/api"
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +229,9 @@ async def test_response_meta_from_headers():
                     "X-Request-Id": "req-xyz-789",
                     "X-Credits-Used": "0",
                     "X-Credits-Remaining": "10000",
-                    "X-Rate-Limit-Limit": "300",
+                    "X-RateLimit-Limit": "300",
+                    "X-RateLimit-Remaining": "299",
+                    "X-RateLimit-Reset": "1711800000",
                     "X-Data-Source": "LINDAS",
                 },
             )
@@ -242,6 +244,8 @@ async def test_response_meta_from_headers():
         assert resp.meta.credits_used == 0
         assert resp.meta.credits_remaining == 10000
         assert resp.meta.rate_limit_limit == 300
+        assert resp.meta.rate_limit_remaining == 299
+        assert resp.meta.rate_limit_reset == 1711800000
         assert resp.meta.data_source == "LINDAS"
         assert resp.data.name == "Acme Corp"
         assert resp.data.tier == "enterprise"

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from vynco._base_client import _build_params
-from vynco._response import Response
+from vynco._response import ExportFile, Response
 from vynco.types.graph import GraphResponse, NetworkAnalysisResponse
 
 if TYPE_CHECKING:
@@ -24,14 +24,13 @@ class AsyncGraph:
             response_type=GraphResponse,
         )
 
-    async def export(self, uid: str, *, format: str) -> Response[bytes]:
+    async def export(self, uid: str, *, format: str) -> ExportFile:
         """Export a company graph in a specific format."""
         params = _build_params({"format": format})
-        return await self._client._request_model(
+        return await self._client._request_bytes(
             "GET",
             f"/v1/graph/{uid}/export",
             params=params,
-            response_type=bytes,
         )
 
     async def analyze(
@@ -63,14 +62,13 @@ class Graph:
             response_type=GraphResponse,
         )
 
-    def export(self, uid: str, *, format: str) -> Response[bytes]:
+    def export(self, uid: str, *, format: str) -> ExportFile:
         """Export a company graph in a specific format."""
         params = _build_params({"format": format})
-        return self._client._request_model(
+        return self._client._request_bytes(
             "GET",
             f"/v1/graph/{uid}/export",
             params=params,
-            response_type=bytes,
         )
 
     def analyze(

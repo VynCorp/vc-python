@@ -15,17 +15,28 @@ from vynco.types.auditors import AuditorHistoryResponse, AuditorTenure, AuditorT
 from vynco.types.billing import SessionUrl
 from vynco.types.changes import ChangeStatistics, CompanyChange
 from vynco.types.companies import (
+    Acquisition,
+    ChangeEntry,
+    Classification,
     Company,
     CompanyCount,
+    CompanyFullResponse,
     CompanyReport,
     CompanyStatistics,
     CompareResponse,
+    CorporateStructure,
     EventListResponse,
     Fingerprint,
     HierarchyResponse,
     NearbyCompany,
     NewsItem,
+    Note,
+    PersonEntry,
+    RelatedCompanyEntry,
     Relationship,
+    RelationshipEntry,
+    Tag,
+    TagSummary,
 )
 from vynco.types.credits import CreditBalance, CreditHistory, CreditLedgerEntry, CreditUsage
 from vynco.types.dashboard import DashboardResponse, DataCompleteness, PipelineStatus
@@ -33,10 +44,16 @@ from vynco.types.dossiers import Dossier, DossierSummary
 from vynco.types.exports import ExportDownload, ExportJob
 from vynco.types.graph import GraphLink, GraphNode, GraphResponse, NetworkAnalysisResponse
 from vynco.types.health import HealthResponse
-from vynco.types.persons import BoardMember
+from vynco.types.persons import BoardMember, PersonDetail, PersonRoleDetail, PersonSearchResult
 from vynco.types.screening import ScreeningHit, ScreeningResponse
 from vynco.types.shared import PaginatedResponse, VyncoModel
-from vynco.types.teams import BillingSummary, Invitation, Team, TeamMember
+from vynco.types.teams import (
+    BillingSummary,
+    Invitation,
+    JoinTeamResponse,
+    Team,
+    TeamMember,
+)
 from vynco.types.watchlists import (
     AddCompaniesResponse,
     Watchlist,
@@ -67,6 +84,17 @@ __all__ = [
     "HierarchyResponse",
     "Fingerprint",
     "NearbyCompany",
+    "Classification",
+    "CorporateStructure",
+    "RelatedCompanyEntry",
+    "Acquisition",
+    "Note",
+    "Tag",
+    "TagSummary",
+    "CompanyFullResponse",
+    "PersonEntry",
+    "ChangeEntry",
+    "RelationshipEntry",
     # Auditors
     "AuditorHistoryResponse",
     "AuditorTenure",
@@ -111,11 +139,15 @@ __all__ = [
     "TeamMember",
     "Invitation",
     "BillingSummary",
+    "JoinTeamResponse",
     # Changes
     "CompanyChange",
     "ChangeStatistics",
     # Persons
     "BoardMember",
+    "PersonSearchResult",
+    "PersonDetail",
+    "PersonRoleDetail",
     # Analytics
     "CantonDistribution",
     "AuditorMarketShare",

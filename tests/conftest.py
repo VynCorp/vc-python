@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-BASE_URL = "https://api.vynco.ch"
+BASE_URL = "https://vynco.ch/api"
