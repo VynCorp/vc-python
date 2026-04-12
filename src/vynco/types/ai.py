@@ -44,3 +44,18 @@ class RiskScoreResponse(VyncoModel):
     risk_level: str = ""
     breakdown: list[RiskFactor] = []
     assessed_at: str = ""
+
+
+class RiskScoreResult(VyncoModel):
+    """A summary risk score for a single company in a batch request."""
+
+    uid: str = ""
+    company_name: str = ""
+    overall_score: int = 0
+    risk_level: str = ""
+
+
+class BatchRiskScoreResponse(VyncoModel):
+    """Response from a batch risk scoring request."""
+
+    results: list[RiskScoreResult] = []

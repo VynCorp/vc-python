@@ -50,6 +50,25 @@ class Company(VyncoModel):
     translations: list[str] | None = None
     updated_at: str | None = None
 
+    # --- Enrichment provenance (v3.1+) ---
+    # GLEIF-sourced parent linkage. ``direct_parent_lei`` is the immediate
+    # registered parent; ``ultimate_parent_lei`` is the top of the ownership
+    # chain as resolved through GLEIF. ``ultimate_parent_name`` is a
+    # convenience cache of the ultimate parent's registered name. Non-Swiss
+    # parents surface as LEI-only identifiers (no CHE-xxx UID).
+    direct_parent_lei: str | None = None
+    ultimate_parent_lei: str | None = None
+    ultimate_parent_name: str | None = None
+    gleif_parent_enriched_at: str | None = None
+
+    # LLM-assisted industry classification. ``industry_source`` is ``"zefix"``
+    # for source-extracted values or ``"llm"`` for AI-classified values.
+    # Filter on ``industry_source == "zefix"`` to exclude AI-classified
+    # companies from regulatory-grade workflows.
+    industry_source: str | None = None
+    industry_confidence: float | None = None
+    industry_classified_at: str | None = None
+
 
 class CompanyCount(VyncoModel):
     """Company count response."""
@@ -136,12 +155,22 @@ class Relationship(VyncoModel):
     shared_persons: list[str] = []
 
 
+class HierarchyEntity(VyncoModel):
+    """A company entity in a hierarchy response."""
+
+    uid: str = ""
+    name: str = ""
+    confidence: str | None = None
+    shared_person_count: int | None = None
+    shared_persons: list[str] | None = None
+
+
 class HierarchyResponse(VyncoModel):
     """Parent/subsidiary hierarchy response."""
 
-    parent: Any = None
-    subsidiaries: list[Any] = []
-    siblings: list[Any] = []
+    parent: HierarchyEntity | None = None
+    subsidiaries: list[HierarchyEntity] = []
+    siblings: list[HierarchyEntity] = []
 
 
 class Fingerprint(VyncoModel):
@@ -168,6 +197,7 @@ class Fingerprint(VyncoModel):
     subsidiary_count: int = 0
     generated_at: str = ""
     fingerprint_version: str = ""
+    registration_date: str | None = None
 
 
 class NearbyCompany(VyncoModel):
@@ -196,6 +226,14 @@ class Classification(VyncoModel):
     classified_at: str = ""
     auditor_category: str | None = None
     is_finma_regulated: bool = False
+
+    # --- Enrichment provenance (v3.1+) ---
+    # ``industry_source`` is ``"zefix"`` / ``"keyword_match"`` for rule-based
+    # classification, or ``"llm"`` for AI-classified values. Use
+    # ``industry_source == "llm"`` + a confidence threshold to gate UI
+    # treatment or regulatory-grade filtering.
+    industry_source: str | None = None
+    industry_confidence: float | None = None
 
 
 class RelatedCompanyEntry(VyncoModel):
@@ -263,6 +301,13 @@ class PersonEntry(VyncoModel):
     role: str = ""
     since: str | None = None
     until: str | None = None
+
+    # --- Enrichment provenance (v3.1+) ---
+    # ``role_source`` is ``"zefix"`` for source-extracted roles or ``"llm"``
+    # for AI-inferred roles (from SOGC text).
+    role_source: str | None = None
+    role_confidence: float | None = None
+    role_inferred_at: str | None = None
 
 
 class ChangeEntry(VyncoModel):

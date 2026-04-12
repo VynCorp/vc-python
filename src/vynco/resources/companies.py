@@ -25,7 +25,11 @@ from vynco.types.companies import (
     Tag,
     TagSummary,
 )
+from vynco.types.media import MediaAnalysisResponse, MediaResponse
 from vynco.types.shared import PaginatedResponse
+from vynco.types.similar import SimilarCompaniesResponse
+from vynco.types.timeline import TimelineResponse, TimelineSummaryResponse
+from vynco.types.ubo import UboResponse
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
@@ -307,16 +311,118 @@ class AsyncCompanies:
             response_type=list[TagSummary],
         )
 
-    # -- Excel export --
+    # -- Timeline --
 
-    async def export_excel(
+    async def timeline(
+        self,
+        uid: str,
+        *,
+        since: str | None = None,
+        until: str | None = None,
+        change_type: str | None = None,
+    ) -> Response[TimelineResponse]:
+        """Get a chronological timeline of a company's changes.
+
+        ``since`` and ``until`` are ISO-8601 timestamps. ``change_type`` filters
+        to a single category (e.g. ``capital_change``).
+        """
+        params = _build_params({"since": since, "until": until, "changeType": change_type})
+        return await self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/timeline",
+            params=params or None,
+            response_type=TimelineResponse,
+        )
+
+    async def timeline_summary(
+        self,
+        uid: str,
+        *,
+        since: str | None = None,
+        until: str | None = None,
+        change_type: str | None = None,
+    ) -> Response[TimelineSummaryResponse]:
+        """Get an AI-generated narrative summary of a company timeline."""
+        params = _build_params({"since": since, "until": until, "changeType": change_type})
+        return await self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/timeline/summary",
+            params=params or None,
+            response_type=TimelineSummaryResponse,
+        )
+
+    # -- Similar companies --
+
+    async def similar(
+        self,
+        uid: str,
+        *,
+        limit: int | None = None,
+    ) -> Response[SimilarCompaniesResponse]:
+        """Find companies similar to the given one (industry, canton, capital, etc.)."""
+        params = _build_params({"limit": limit})
+        return await self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/similar",
+            params=params or None,
+            response_type=SimilarCompaniesResponse,
+        )
+
+    # -- UBO / Ownership --
+
+    async def ubo(self, uid: str) -> Response[UboResponse]:
+        """Resolve the ultimate beneficial owner(s) of a company."""
+        return await self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/ubo",
+            response_type=UboResponse,
+        )
+
+    # -- Media / News with sentiment --
+
+    async def media(
+        self,
+        uid: str,
+        *,
+        sentiment: str | None = None,
+        since: str | None = None,
+        limit: int | None = None,
+    ) -> Response[MediaResponse]:
+        """Get media/news items for a company, optionally filtered by sentiment.
+
+        ``sentiment`` is one of ``positive``, ``neutral``, ``negative``.
+        """
+        params = _build_params({"sentiment": sentiment, "since": since, "limit": limit})
+        return await self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/media",
+            params=params or None,
+            response_type=MediaResponse,
+        )
+
+    async def media_analyze(self, uid: str) -> Response[MediaAnalysisResponse]:
+        """Trigger LLM sentiment analysis on unanalyzed media items for a company."""
+        return await self._client._request_model(
+            "POST",
+            f"/v1/companies/{uid}/media/analyze",
+            response_type=MediaAnalysisResponse,
+        )
+
+    # -- CSV export --
+
+    async def export_csv(
         self,
         *,
         uids: _list[str] | None = None,
         filter: dict[str, Any] | None = None,
         fields: _list[str] | None = None,
     ) -> ExportFile:
-        """Export companies as Excel/CSV."""
+        """Export companies as CSV.
+
+        Returns an :class:`ExportFile` wrapping raw bytes and metadata. The
+        server currently emits ``text/csv``; the endpoint is shared with the
+        legacy ``export_excel`` method which is kept as a deprecated alias.
+        """
         body: dict[str, Any] = {}
         if uids is not None:
             body["uids"] = uids
@@ -329,6 +435,19 @@ class AsyncCompanies:
             "/v1/companies/export/excel",
             json=body,
         )
+
+    async def export_excel(
+        self,
+        *,
+        uids: _list[str] | None = None,
+        filter: dict[str, Any] | None = None,
+        fields: _list[str] | None = None,
+    ) -> ExportFile:
+        """Deprecated: use :meth:`export_csv` instead.
+
+        Kept for backwards compatibility. The server returns CSV, not Excel.
+        """
+        return await self.export_csv(uids=uids, filter=filter, fields=fields)
 
 
 class Companies:
@@ -605,16 +724,111 @@ class Companies:
             response_type=list[TagSummary],
         )
 
-    # -- Excel export --
+    # -- Timeline --
 
-    def export_excel(
+    def timeline(
+        self,
+        uid: str,
+        *,
+        since: str | None = None,
+        until: str | None = None,
+        change_type: str | None = None,
+    ) -> Response[TimelineResponse]:
+        """Get a chronological timeline of a company's changes."""
+        params = _build_params({"since": since, "until": until, "changeType": change_type})
+        return self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/timeline",
+            params=params or None,
+            response_type=TimelineResponse,
+        )
+
+    def timeline_summary(
+        self,
+        uid: str,
+        *,
+        since: str | None = None,
+        until: str | None = None,
+        change_type: str | None = None,
+    ) -> Response[TimelineSummaryResponse]:
+        """Get an AI-generated narrative summary of a company timeline."""
+        params = _build_params({"since": since, "until": until, "changeType": change_type})
+        return self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/timeline/summary",
+            params=params or None,
+            response_type=TimelineSummaryResponse,
+        )
+
+    # -- Similar companies --
+
+    def similar(
+        self,
+        uid: str,
+        *,
+        limit: int | None = None,
+    ) -> Response[SimilarCompaniesResponse]:
+        """Find companies similar to the given one (industry, canton, capital, etc.)."""
+        params = _build_params({"limit": limit})
+        return self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/similar",
+            params=params or None,
+            response_type=SimilarCompaniesResponse,
+        )
+
+    # -- UBO / Ownership --
+
+    def ubo(self, uid: str) -> Response[UboResponse]:
+        """Resolve the ultimate beneficial owner(s) of a company."""
+        return self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/ubo",
+            response_type=UboResponse,
+        )
+
+    # -- Media / News with sentiment --
+
+    def media(
+        self,
+        uid: str,
+        *,
+        sentiment: str | None = None,
+        since: str | None = None,
+        limit: int | None = None,
+    ) -> Response[MediaResponse]:
+        """Get media/news items for a company, optionally filtered by sentiment."""
+        params = _build_params({"sentiment": sentiment, "since": since, "limit": limit})
+        return self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/media",
+            params=params or None,
+            response_type=MediaResponse,
+        )
+
+    def media_analyze(self, uid: str) -> Response[MediaAnalysisResponse]:
+        """Trigger LLM sentiment analysis on unanalyzed media items for a company."""
+        return self._client._request_model(
+            "POST",
+            f"/v1/companies/{uid}/media/analyze",
+            response_type=MediaAnalysisResponse,
+        )
+
+    # -- CSV export --
+
+    def export_csv(
         self,
         *,
         uids: _list[str] | None = None,
         filter: dict[str, Any] | None = None,
         fields: _list[str] | None = None,
     ) -> ExportFile:
-        """Export companies as Excel/CSV."""
+        """Export companies as CSV.
+
+        Returns an :class:`ExportFile` wrapping raw bytes and metadata. The
+        server currently emits ``text/csv``; the endpoint is shared with the
+        legacy ``export_excel`` method which is kept as a deprecated alias.
+        """
         body: dict[str, Any] = {}
         if uids is not None:
             body["uids"] = uids
@@ -627,3 +841,16 @@ class Companies:
             "/v1/companies/export/excel",
             json=body,
         )
+
+    def export_excel(
+        self,
+        *,
+        uids: _list[str] | None = None,
+        filter: dict[str, Any] | None = None,
+        fields: _list[str] | None = None,
+    ) -> ExportFile:
+        """Deprecated: use :meth:`export_csv` instead.
+
+        Kept for backwards compatibility. The server returns CSV, not Excel.
+        """
+        return self.export_csv(uids=uids, filter=filter, fields=fields)

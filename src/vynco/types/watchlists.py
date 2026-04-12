@@ -23,10 +23,25 @@ class WatchlistSummary(VyncoModel):
     created_at: str = ""
 
 
+class WatchlistCompanyEntry(VyncoModel):
+    """An enriched company entry in a watchlist response."""
+
+    uid: str
+    name: str | None = None
+    status: str | None = None
+    canton: str | None = None
+
+
 class WatchlistCompaniesResponse(VyncoModel):
-    """Response containing UIDs of companies in a watchlist."""
+    """Response containing companies in a watchlist.
+
+    The ``uids`` field contains the bare UIDs for backwards compatibility.
+    The ``companies`` field (added in v3.1) contains enriched entries with
+    name, status, and canton.
+    """
 
     uids: list[str] = []
+    companies: list[WatchlistCompanyEntry] = []
 
 
 class AddCompaniesResponse(VyncoModel):

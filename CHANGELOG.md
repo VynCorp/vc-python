@@ -5,6 +5,83 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-04-12
+
+### Added
+
+New resource modules:
+
+- **`client.alerts`** — persistent saved queries with optional webhook delivery (`list`, `create`, `delete`)
+- **`client.ownership`** — ownership-chain trace with circular-ownership detection (`trace`)
+
+New methods on existing resources:
+
+- **`companies.timeline(uid, since, until, change_type)`** — chronological event timeline for a company
+- **`companies.timeline_summary(uid, ...)`** — AI-generated narrative summary of a company's timeline
+- **`companies.similar(uid, limit)`** — find companies scored on industry, canton, capital, legal form, auditor tier
+- **`companies.ubo(uid)`** — ultimate beneficial owner resolution
+- **`companies.media(uid, sentiment, since, limit)`** — media/news items with optional sentiment filtering
+- **`companies.media_analyze(uid)`** — trigger LLM sentiment analysis on unanalyzed media items
+- **`companies.export_csv(...)`** — canonical name for company data export (replaces `export_excel`, kept as deprecated alias)
+- **`persons.network(id)`** — person-centric network view (companies + co-directors + stats)
+- **`analytics.flows(period, since, group_by)`** — market flow analytics (registrations/dissolutions over time)
+- **`analytics.migrations(since)`** — canton migration analytics (legal seat changes between cantons)
+- **`analytics.benchmark(uid, dimensions)`** — benchmark a company against industry peers with percentile ranks
+- **`screening.batch(uids)`** — batch sanctions screening (up to 100 UIDs per call)
+- **`ai.risk_score_batch(uids)`** — batch AI risk scoring (up to 50 UIDs per call)
+
+Pagination:
+
+- **`persons.board_members(uid, page, page_size)`** — pagination support (max 500, default 100)
+
+Enrichment provenance fields (populated by new backend pipelines; all optional and backwards-compatible):
+
+- **`Company.direct_parent_lei`**, **`ultimate_parent_lei`**, **`ultimate_parent_name`**, **`gleif_parent_enriched_at`** — GLEIF-sourced parent linkage
+- **`Company.industry_source`**, **`industry_confidence`**, **`industry_classified_at`** — LLM-assisted industry classification provenance
+- **`Classification.industry_source`**, **`industry_confidence`** — same provenance on the classification endpoint
+- **`Fingerprint.registration_date`** — Swiss register entry date
+- **`BoardMember.role_source`**, **`role_confidence`**, **`role_inferred_at`** — role extraction provenance
+- **`PersonRoleDetail.role_source`**, **`role_confidence`**, **`role_inferred_at`** — same on person detail roles
+- **`PersonEntry.role_source`**, **`role_confidence`**, **`role_inferred_at`** — same on company full-response person entries
+- **`NetworkCompany.role_source`**, **`role_confidence`**, **`role_inferred_at`** — same on person network companies
+
+Data coverage disclosure:
+
+- **`UboResponse.data_coverage_note`** — human-readable explanation when the chain can't be fully resolved (e.g. before weekly GLEIF run)
+- **`FlowsResponse.data_coverage_note`** — surfaces asymmetries (e.g. historical dissolution under-counting)
+
+New typed models:
+
+- `TimelineEvent`, `TimelineResponse`, `TimelineSummaryResponse`
+- `SimilarCompaniesResponse`, `SimilarCompanyResult`
+- `UboResponse`, `UboPerson`, `ChainLink`, `OwnershipResponse`, `OwnershipEntity`, `OwnershipLink`, `PersonCompanyRole`, `KeyPerson`, `CircularFlag`
+- `Alert`
+- `MediaResponse`, `MediaItem`, `MediaAnalysisResponse`
+- `FlowsResponse`, `FlowDataPoint`, `MigrationResponse`, `MigrationFlow`
+- `BenchmarkResponse`, `BenchmarkDimension`
+- `BatchScreeningResponse`, `BatchScreeningResultByUid`, `BatchScreeningHitSummary`
+- `BatchRiskScoreResponse`, `RiskScoreResult`
+- `PersonNetworkResponse`, `NetworkPerson`, `NetworkCompany`, `NetworkStats`, `CoDirector`, `CoDirectorCompany`
+- `HierarchyEntity` — replaces the untyped `Any` on `HierarchyResponse`
+- `WatchlistCompanyEntry` — enriched entry on `WatchlistCompaniesResponse.companies`
+
+Documentation:
+
+- **`examples/`** — 7 runnable scripts covering quickstart, due diligence, watchlist monitoring, company networks, bulk export, historical timelines, and UBO resolution
+- **`notebooks/`** — 5 Jupyter notebooks producing publication-ready charts (Swiss market analytics, company deep dive, compliance screening, market flows, similar companies)
+- Full `README.md` rewrite with examples/notebooks section, 17 generated figures, and v3.1 feature overview
+
+### Changed
+
+- **`HierarchyResponse.parent` and `subsidiaries` / `siblings`** now use typed `HierarchyEntity` instead of `Any`
+- **`WatchlistCompaniesResponse`** now includes a typed `companies: list[WatchlistCompanyEntry]` field alongside the existing `uids`
+- **`Company.industry`** behaviour: field itself unchanged, but new `industry_source` companion field lets consumers distinguish `"zefix"` / `"keyword_match"` from `"llm"` classifications
+- **`UboPerson.controlling_entity_uid`**, **`ChainLink.from_uid`/`to_uid`**, **`OwnershipLink.source_uid`/`target_uid`** — documented that non-Swiss parents (resolved via GLEIF) appear as `LEI:<20-char-lei>` synthetic identifiers
+
+### Deprecated
+
+- **`companies.export_excel()`** — kept as a deprecated alias for `companies.export_csv()`. The endpoint returns CSV (not Excel); the new name reflects reality. Will be removed in a future major release.
+
 ## [3.0.0] - 2026-04-08
 
 ### Changed

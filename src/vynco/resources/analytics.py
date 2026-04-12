@@ -9,9 +9,12 @@ from vynco.types.analytics import (
     AnomalyResponse,
     AuditCandidate,
     AuditorMarketShare,
+    BenchmarkResponse,
     CantonDistribution,
     ClusterResponse,
     CohortResponse,
+    FlowsResponse,
+    MigrationResponse,
     RfmSegmentsResponse,
 )
 from vynco.types.shared import PaginatedResponse
@@ -118,6 +121,58 @@ class AsyncAnalytics:
             response_type=PaginatedResponse[AuditCandidate],
         )
 
+    async def flows(
+        self,
+        *,
+        period: str | None = None,
+        since: str | None = None,
+        group_by: str | None = None,
+    ) -> Response[FlowsResponse]:
+        """Get market flow analytics — registrations and dissolutions over time.
+
+        ``period`` is ``monthly`` (default), ``quarterly``, or ``yearly``.
+        ``group_by`` is ``canton`` (default), ``industry``, or ``legalForm``.
+        """
+        params = _build_params({k: v for k, v in locals().items() if k != "self"})
+        return await self._client._request_model(
+            "GET",
+            "/v1/analytics/flows",
+            params=params or None,
+            response_type=FlowsResponse,
+        )
+
+    async def migrations(self, *, since: str | None = None) -> Response[MigrationResponse]:
+        """Get canton migration analytics — companies moving their legal seat."""
+        params = _build_params({"since": since})
+        return await self._client._request_model(
+            "GET",
+            "/v1/analytics/migrations",
+            params=params or None,
+            response_type=MigrationResponse,
+        )
+
+    async def benchmark(
+        self,
+        *,
+        uid: str,
+        dimensions: list[str] | None = None,
+    ) -> Response[BenchmarkResponse]:
+        """Benchmark a company against its industry peers.
+
+        Returns percentile ranks for dimensions such as capital, board_size,
+        change_frequency, and company_age. Pass ``dimensions`` as a list to
+        restrict which metrics are computed; otherwise all are returned.
+        """
+        params: dict[str, Any] = {"uid": uid}
+        if dimensions is not None:
+            params["dimensions"] = ",".join(dimensions)
+        return await self._client._request_model(
+            "GET",
+            "/v1/analytics/benchmark",
+            params=params,
+            response_type=BenchmarkResponse,
+        )
+
 
 class Analytics:
     """Sync analytics operations."""
@@ -213,4 +268,56 @@ class Analytics:
             "/v1/analytics/candidates",
             params=params or None,
             response_type=PaginatedResponse[AuditCandidate],
+        )
+
+    def flows(
+        self,
+        *,
+        period: str | None = None,
+        since: str | None = None,
+        group_by: str | None = None,
+    ) -> Response[FlowsResponse]:
+        """Get market flow analytics — registrations and dissolutions over time.
+
+        ``period`` is ``monthly`` (default), ``quarterly``, or ``yearly``.
+        ``group_by`` is ``canton`` (default), ``industry``, or ``legalForm``.
+        """
+        params = _build_params({k: v for k, v in locals().items() if k != "self"})
+        return self._client._request_model(
+            "GET",
+            "/v1/analytics/flows",
+            params=params or None,
+            response_type=FlowsResponse,
+        )
+
+    def migrations(self, *, since: str | None = None) -> Response[MigrationResponse]:
+        """Get canton migration analytics — companies moving their legal seat."""
+        params = _build_params({"since": since})
+        return self._client._request_model(
+            "GET",
+            "/v1/analytics/migrations",
+            params=params or None,
+            response_type=MigrationResponse,
+        )
+
+    def benchmark(
+        self,
+        *,
+        uid: str,
+        dimensions: list[str] | None = None,
+    ) -> Response[BenchmarkResponse]:
+        """Benchmark a company against its industry peers.
+
+        Returns percentile ranks for dimensions such as capital, board_size,
+        change_frequency, and company_age. Pass ``dimensions`` as a list to
+        restrict which metrics are computed; otherwise all are returned.
+        """
+        params: dict[str, Any] = {"uid": uid}
+        if dimensions is not None:
+            params["dimensions"] = ",".join(dimensions)
+        return self._client._request_model(
+            "GET",
+            "/v1/analytics/benchmark",
+            params=params,
+            response_type=BenchmarkResponse,
         )

@@ -1,13 +1,27 @@
 from __future__ import annotations
 
-from vynco.types.ai import AiSearchResponse, DossierResponse, RiskFactor, RiskScoreResponse
+from vynco.types.ai import (
+    AiSearchResponse,
+    BatchRiskScoreResponse,
+    DossierResponse,
+    RiskFactor,
+    RiskScoreResponse,
+    RiskScoreResult,
+)
+from vynco.types.alerts import Alert
 from vynco.types.analytics import (
     AnomalyResponse,
     AuditCandidate,
     AuditorMarketShare,
+    BenchmarkDimension,
+    BenchmarkResponse,
     CantonDistribution,
     ClusterResponse,
     CohortResponse,
+    FlowDataPoint,
+    FlowsResponse,
+    MigrationFlow,
+    MigrationResponse,
     RfmSegmentsResponse,
 )
 from vynco.types.api_keys import ApiKey, ApiKeyCreated
@@ -27,6 +41,7 @@ from vynco.types.companies import (
     CorporateStructure,
     EventListResponse,
     Fingerprint,
+    HierarchyEntity,
     HierarchyResponse,
     NearbyCompany,
     NewsItem,
@@ -44,9 +59,28 @@ from vynco.types.dossiers import Dossier, DossierSummary
 from vynco.types.exports import ExportDownload, ExportJob
 from vynco.types.graph import GraphLink, GraphNode, GraphResponse, NetworkAnalysisResponse
 from vynco.types.health import HealthResponse
-from vynco.types.persons import BoardMember, PersonDetail, PersonRoleDetail, PersonSearchResult
-from vynco.types.screening import ScreeningHit, ScreeningResponse
+from vynco.types.media import MediaAnalysisResponse, MediaItem, MediaResponse
+from vynco.types.persons import (
+    BoardMember,
+    CoDirector,
+    CoDirectorCompany,
+    NetworkCompany,
+    NetworkPerson,
+    NetworkStats,
+    PersonDetail,
+    PersonNetworkResponse,
+    PersonRoleDetail,
+    PersonSearchResult,
+)
+from vynco.types.screening import (
+    BatchScreeningHitSummary,
+    BatchScreeningResponse,
+    BatchScreeningResultByUid,
+    ScreeningHit,
+    ScreeningResponse,
+)
 from vynco.types.shared import PaginatedResponse, VyncoModel
+from vynco.types.similar import SimilarCompaniesResponse, SimilarCompanyResult
 from vynco.types.teams import (
     BillingSummary,
     Invitation,
@@ -54,10 +88,23 @@ from vynco.types.teams import (
     Team,
     TeamMember,
 )
+from vynco.types.timeline import TimelineEvent, TimelineResponse, TimelineSummaryResponse
+from vynco.types.ubo import (
+    ChainLink,
+    CircularFlag,
+    KeyPerson,
+    OwnershipEntity,
+    OwnershipLink,
+    OwnershipResponse,
+    PersonCompanyRole,
+    UboPerson,
+    UboResponse,
+)
 from vynco.types.watchlists import (
     AddCompaniesResponse,
     Watchlist,
     WatchlistCompaniesResponse,
+    WatchlistCompanyEntry,
     WatchlistSummary,
 )
 from vynco.types.webhooks import (
@@ -81,6 +128,7 @@ __all__ = [
     "NewsItem",
     "CompanyReport",
     "Relationship",
+    "HierarchyEntity",
     "HierarchyResponse",
     "Fingerprint",
     "NearbyCompany",
@@ -106,10 +154,14 @@ __all__ = [
     # Screening
     "ScreeningResponse",
     "ScreeningHit",
+    "BatchScreeningResponse",
+    "BatchScreeningResultByUid",
+    "BatchScreeningHitSummary",
     # Watchlists
     "Watchlist",
     "WatchlistSummary",
     "WatchlistCompaniesResponse",
+    "WatchlistCompanyEntry",
     "AddCompaniesResponse",
     # Webhooks
     "WebhookSubscription",
@@ -124,6 +176,10 @@ __all__ = [
     "AiSearchResponse",
     "RiskScoreResponse",
     "RiskFactor",
+    "RiskScoreResult",
+    "BatchRiskScoreResponse",
+    # Alerts
+    "Alert",
     # API Keys
     "ApiKey",
     "ApiKeyCreated",
@@ -148,6 +204,12 @@ __all__ = [
     "PersonSearchResult",
     "PersonDetail",
     "PersonRoleDetail",
+    "PersonNetworkResponse",
+    "NetworkPerson",
+    "NetworkCompany",
+    "NetworkStats",
+    "CoDirector",
+    "CoDirectorCompany",
     # Analytics
     "CantonDistribution",
     "AuditorMarketShare",
@@ -156,6 +218,12 @@ __all__ = [
     "RfmSegmentsResponse",
     "CohortResponse",
     "AuditCandidate",
+    "FlowsResponse",
+    "FlowDataPoint",
+    "MigrationResponse",
+    "MigrationFlow",
+    "BenchmarkResponse",
+    "BenchmarkDimension",
     # Dossiers
     "Dossier",
     "DossierSummary",
@@ -164,4 +232,25 @@ __all__ = [
     "GraphNode",
     "GraphLink",
     "NetworkAnalysisResponse",
+    # Timeline
+    "TimelineResponse",
+    "TimelineSummaryResponse",
+    "TimelineEvent",
+    # Similar companies
+    "SimilarCompaniesResponse",
+    "SimilarCompanyResult",
+    # UBO / Ownership
+    "UboResponse",
+    "UboPerson",
+    "ChainLink",
+    "OwnershipResponse",
+    "OwnershipEntity",
+    "OwnershipLink",
+    "PersonCompanyRole",
+    "KeyPerson",
+    "CircularFlag",
+    # Media
+    "MediaResponse",
+    "MediaItem",
+    "MediaAnalysisResponse",
 ]

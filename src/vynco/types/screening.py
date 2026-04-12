@@ -26,3 +26,28 @@ class ScreeningResponse(VyncoModel):
     risk_level: str = ""
     hits: list[ScreeningHit] = []
     sources_checked: list[str] = []
+
+
+class BatchScreeningHitSummary(VyncoModel):
+    """A summary of a single screening hit within a batch result."""
+
+    source: str = ""
+    matched_name: str = ""
+    score: float = 0.0
+
+
+class BatchScreeningResultByUid(VyncoModel):
+    """Screening result for a single company in a batch screening request."""
+
+    uid: str = ""
+    company_name: str = ""
+    risk_level: str = ""
+    total_hits: int = 0
+    sources_checked: list[str] = []
+    hits: list[BatchScreeningHitSummary] = []
+
+
+class BatchScreeningResponse(VyncoModel):
+    """Response from a batch screening request."""
+
+    results: list[BatchScreeningResultByUid] = []

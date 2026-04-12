@@ -9,6 +9,7 @@ from vynco._base_client import BaseClientConfig
 from vynco._constants import DEFAULT_BASE_URL, DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT
 from vynco._response import ExportFile, Response, ResponseMeta
 from vynco.resources.ai import Ai, AsyncAi
+from vynco.resources.alerts import Alerts, AsyncAlerts
 from vynco.resources.analytics import Analytics, AsyncAnalytics
 from vynco.resources.api_keys import ApiKeys, AsyncApiKeys
 from vynco.resources.auditors import AsyncAuditors, Auditors
@@ -21,6 +22,7 @@ from vynco.resources.dossiers import AsyncDossiers, Dossiers
 from vynco.resources.exports import AsyncExports, Exports
 from vynco.resources.graph import AsyncGraph, Graph
 from vynco.resources.health import AsyncHealth, Health
+from vynco.resources.ownership import AsyncOwnership, Ownership
 from vynco.resources.persons import AsyncPersons, Persons
 from vynco.resources.screening import AsyncScreening, Screening
 from vynco.resources.teams import AsyncTeams, Teams
@@ -78,6 +80,8 @@ class AsyncClient(BaseClientConfig):
         self.analytics = AsyncAnalytics(self)
         self.dossiers = AsyncDossiers(self)
         self.graph = AsyncGraph(self)
+        self.alerts = AsyncAlerts(self)
+        self.ownership = AsyncOwnership(self)
 
     async def _request(
         self,
@@ -206,6 +210,8 @@ class Client(BaseClientConfig):
         self.analytics = Analytics(self)
         self.dossiers = Dossiers(self)
         self.graph = Graph(self)
+        self.alerts = Alerts(self)
+        self.ownership = Ownership(self)
 
     def _request(
         self,

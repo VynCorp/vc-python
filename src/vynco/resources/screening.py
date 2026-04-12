@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from vynco._response import Response
-from vynco.types.screening import ScreeningResponse
+from vynco.types.screening import BatchScreeningResponse, ScreeningResponse
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
@@ -35,6 +35,15 @@ class AsyncScreening:
             response_type=ScreeningResponse,
         )
 
+    async def batch(self, *, uids: list[str]) -> Response[BatchScreeningResponse]:
+        """Screen up to 100 companies against sanctions lists in a single call."""
+        return await self._client._request_model(
+            "POST",
+            "/v1/screening/batch",
+            json={"uids": uids},
+            response_type=BatchScreeningResponse,
+        )
+
 
 class Screening:
     """Sync screening operations."""
@@ -60,4 +69,13 @@ class Screening:
             "/v1/screening",
             json=body,
             response_type=ScreeningResponse,
+        )
+
+    def batch(self, *, uids: list[str]) -> Response[BatchScreeningResponse]:
+        """Screen up to 100 companies against sanctions lists in a single call."""
+        return self._client._request_model(
+            "POST",
+            "/v1/screening/batch",
+            json={"uids": uids},
+            response_type=BatchScreeningResponse,
         )

@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from vynco._response import Response
-from vynco.types.ai import AiSearchResponse, DossierResponse, RiskScoreResponse
+from vynco.types.ai import (
+    AiSearchResponse,
+    BatchRiskScoreResponse,
+    DossierResponse,
+    RiskScoreResponse,
+)
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
@@ -50,6 +55,15 @@ class AsyncAi:
             response_type=RiskScoreResponse,
         )
 
+    async def risk_score_batch(self, *, uids: list[str]) -> Response[BatchRiskScoreResponse]:
+        """Get AI risk scores for up to 50 companies in a single call."""
+        return await self._client._request_model(
+            "POST",
+            "/v1/ai/risk-score/batch",
+            json={"uids": uids},
+            response_type=BatchRiskScoreResponse,
+        )
+
 
 class Ai:
     """Sync AI operations."""
@@ -90,4 +104,13 @@ class Ai:
             "/v1/ai/risk-score",
             json={"uid": uid},
             response_type=RiskScoreResponse,
+        )
+
+    def risk_score_batch(self, *, uids: list[str]) -> Response[BatchRiskScoreResponse]:
+        """Get AI risk scores for up to 50 companies in a single call."""
+        return self._client._request_model(
+            "POST",
+            "/v1/ai/risk-score/batch",
+            json={"uids": uids},
+            response_type=BatchRiskScoreResponse,
         )
