@@ -127,9 +127,10 @@ class BenchmarkDimension(VyncoModel):
     """A single benchmarking dimension comparing a company to its industry peers."""
 
     name: str = ""
-    company_value: float = 0.0
-    industry_median: float = 0.0
-    percentile: float = 0.0
+    company_value: float | None = None
+    industry_median: float | None = None
+    percentile: float | None = None
+    peers_with_data: int | None = None
 
 
 class BenchmarkResponse(VyncoModel):
