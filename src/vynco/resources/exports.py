@@ -61,6 +61,31 @@ class AsyncExports:
             f"/v1/exports/{id}/download",
         )
 
+    async def bulk_profiles(
+        self,
+        *,
+        uids: list[str],
+        include_timeline: bool = False,
+        include_board: bool = False,
+    ) -> Response[ExportJob]:
+        """Create a bulk profile export job (NDJSON with nested data).
+
+        Returns an :class:`ExportJob` (202 Accepted) which can be polled via
+        :meth:`get` and downloaded via :meth:`download`. Each line contains a
+        full company profile, optionally with timeline and board members.
+        """
+        body: dict[str, Any] = {"uids": uids}
+        if include_timeline:
+            body["includeTimeline"] = True
+        if include_board:
+            body["includeBoard"] = True
+        return await self._client._request_model(
+            "POST",
+            "/v1/exports/bulk-profiles",
+            json=body,
+            response_type=ExportJob,
+        )
+
 
 class Exports:
     """Sync export operations."""
@@ -112,4 +137,28 @@ class Exports:
         return self._client._request_bytes(
             "GET",
             f"/v1/exports/{id}/download",
+        )
+
+    def bulk_profiles(
+        self,
+        *,
+        uids: list[str],
+        include_timeline: bool = False,
+        include_board: bool = False,
+    ) -> Response[ExportJob]:
+        """Create a bulk profile export job (NDJSON with nested data).
+
+        Returns an :class:`ExportJob` (202 Accepted) which can be polled via
+        :meth:`get` and downloaded via :meth:`download`.
+        """
+        body: dict[str, Any] = {"uids": uids}
+        if include_timeline:
+            body["includeTimeline"] = True
+        if include_board:
+            body["includeBoard"] = True
+        return self._client._request_model(
+            "POST",
+            "/v1/exports/bulk-profiles",
+            json=body,
+            response_type=ExportJob,
         )

@@ -27,3 +27,23 @@ class ChangeStatistics(VyncoModel):
     changes_this_week: int = 0
     changes_this_month: int = 0
     by_type: Any = None
+
+
+class DiffEntry(VyncoModel):
+    """A single field-level change in a company diff."""
+
+    field: str = ""
+    from_value: str | None = None
+    to: str | None = None
+    changed_at: str = ""
+    change_type: str = ""
+
+
+class CompanyDiffResponse(VyncoModel):
+    """Structured field-by-field diff for a company over a time range."""
+
+    uid: str = ""
+    since: str = ""
+    until: str = ""
+    changes: list[DiffEntry] = []
+    total_changes: int = 0

@@ -30,7 +30,7 @@ def main() -> None:
     print(f"   Risk level:              {r.risk_level}")
     print(f"   Credit risk score:       {r.credit_risk_score}/100")
     print(f"   Recommendation:          {r.recommendation}")
-    print(f"\n   Pre-dissolution indicators:")
+    print("\n   Pre-dissolution indicators:")
     for ind in r.pre_dissolution_indicators:
         triggered = "TRIGGERED" if ind.triggered else "clear"
         print(
@@ -49,7 +49,7 @@ def main() -> None:
         )
         c = comp.data
         print(f"   Focus: {c.focus}")
-        print(f"   Governance scores:")
+        print("   Governance scores:")
         for gs in c.governance_scores:
             print(f"     {gs.company_name}: {gs.score}/100")
         if c.board_overlaps:

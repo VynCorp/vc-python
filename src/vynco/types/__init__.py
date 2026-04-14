@@ -27,7 +27,12 @@ from vynco.types.analytics import (
 from vynco.types.api_keys import ApiKey, ApiKeyCreated
 from vynco.types.auditors import AuditorHistoryResponse, AuditorTenure, AuditorTenureStats
 from vynco.types.billing import SessionUrl
-from vynco.types.changes import ChangeStatistics, CompanyChange
+from vynco.types.changes import (
+    ChangeStatistics,
+    CompanyChange,
+    CompanyDiffResponse,
+    DiffEntry,
+)
 from vynco.types.companies import (
     Acquisition,
     ChangeEntry,
@@ -229,6 +234,8 @@ __all__ = [
     # Changes
     "CompanyChange",
     "ChangeStatistics",
+    "CompanyDiffResponse",
+    "DiffEntry",
     # Persons
     "BoardMember",
     "PersonSearchResult",

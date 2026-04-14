@@ -59,8 +59,16 @@ class AsyncCompanies:
         sort_desc: bool | None = None,
         page: int | None = None,
         page_size: int | None = None,
+        lei: str | None = None,
+        duns: str | None = None,
+        isin: str | None = None,
     ) -> Response[PaginatedResponse[Company]]:
-        """List companies with optional filtering and pagination."""
+        """List companies with optional filtering and pagination.
+
+        Supports search by international identifiers: ``lei`` (Legal Entity
+        Identifier), ``duns`` (D-U-N-S Number), ``isin`` (International
+        Securities Identification Number).
+        """
         params = _build_params({k: v for k, v in locals().items() if k != "self"})
         return await self._client._request_model(
             "GET",
@@ -482,8 +490,16 @@ class Companies:
         sort_desc: bool | None = None,
         page: int | None = None,
         page_size: int | None = None,
+        lei: str | None = None,
+        duns: str | None = None,
+        isin: str | None = None,
     ) -> Response[PaginatedResponse[Company]]:
-        """List companies with optional filtering and pagination."""
+        """List companies with optional filtering and pagination.
+
+        Supports search by international identifiers: ``lei`` (Legal Entity
+        Identifier), ``duns`` (D-U-N-S Number), ``isin`` (International
+        Securities Identification Number).
+        """
         params = _build_params({k: v for k, v in locals().items() if k != "self"})
         return self._client._request_model(
             "GET",

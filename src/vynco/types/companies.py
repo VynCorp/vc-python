@@ -50,6 +50,11 @@ class Company(VyncoModel):
     translations: list[str] | None = None
     updated_at: str | None = None
 
+    # --- Identifiers (v3.2+) ---
+    lei: str | None = None
+    duns: str | None = None
+    isin: str | None = None
+
     # --- Enrichment provenance (v3.1+) ---
     # GLEIF-sourced parent linkage. ``direct_parent_lei`` is the immediate
     # registered parent; ``ultimate_parent_lei`` is the top of the ownership
