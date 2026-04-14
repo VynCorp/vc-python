@@ -53,6 +53,15 @@ from vynco.types.companies import (
     Tag,
     TagSummary,
 )
+from vynco.types.comparative import (
+    AuditorAnalysis,
+    AuditorEntry,
+    BoardOverlap,
+    ComparativeResponse,
+    GovernanceFactor,
+    GovernanceScore,
+    OverlapCompanyRole,
+)
 from vynco.types.credits import CreditBalance, CreditHistory, CreditLedgerEntry, CreditUsage
 from vynco.types.dashboard import DashboardResponse, DataCompleteness, PipelineStatus
 from vynco.types.dossiers import Dossier, DossierSummary
@@ -60,6 +69,13 @@ from vynco.types.exports import ExportDownload, ExportJob
 from vynco.types.graph import GraphLink, GraphNode, GraphResponse, NetworkAnalysisResponse
 from vynco.types.health import HealthResponse
 from vynco.types.media import MediaAnalysisResponse, MediaItem, MediaResponse
+from vynco.types.pdf import (
+    PdfAuditorTenure,
+    PdfBoardMember,
+    PdfCompanyData,
+    PdfEvent,
+    PdfProfileResponse,
+)
 from vynco.types.persons import (
     BoardMember,
     CoDirector,
@@ -72,6 +88,20 @@ from vynco.types.persons import (
     PersonRoleDetail,
     PersonSearchResult,
 )
+from vynco.types.pipelines import Pipeline, PipelineEntry, PipelineStats, PipelineWithEntries
+from vynco.types.predictive_risk import PredictiveRiskResponse, RiskIndicator
+from vynco.types.reports import (
+    AuditorCount,
+    CantonCount,
+    GeneratedIndustryReport,
+    IndustryCompanyEntry,
+    IndustryListResponse,
+    IndustryReportResponse,
+    IndustrySummary,
+    StatusCount,
+)
+from vynco.types.sanctions import SanctionEntry, SanctionsListResponse
+from vynco.types.saved_searches import SavedSearch
 from vynco.types.screening import (
     BatchScreeningHitSummary,
     BatchScreeningResponse,
@@ -253,4 +283,40 @@ __all__ = [
     "MediaResponse",
     "MediaItem",
     "MediaAnalysisResponse",
+    # Comparative AI
+    "ComparativeResponse",
+    "BoardOverlap",
+    "OverlapCompanyRole",
+    "AuditorAnalysis",
+    "AuditorEntry",
+    "GovernanceScore",
+    "GovernanceFactor",
+    # Predictive risk
+    "PredictiveRiskResponse",
+    "RiskIndicator",
+    # PDF profile
+    "PdfProfileResponse",
+    "PdfCompanyData",
+    "PdfBoardMember",
+    "PdfEvent",
+    "PdfAuditorTenure",
+    # Reports
+    "IndustryListResponse",
+    "IndustrySummary",
+    "IndustryReportResponse",
+    "IndustryCompanyEntry",
+    "CantonCount",
+    "AuditorCount",
+    "StatusCount",
+    "GeneratedIndustryReport",
+    # Sanctions
+    "SanctionsListResponse",
+    "SanctionEntry",
+    # Pipelines
+    "Pipeline",
+    "PipelineEntry",
+    "PipelineWithEntries",
+    "PipelineStats",
+    # Saved searches
+    "SavedSearch",
 ]

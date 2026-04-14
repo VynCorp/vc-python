@@ -24,6 +24,9 @@ from vynco.resources.graph import AsyncGraph, Graph
 from vynco.resources.health import AsyncHealth, Health
 from vynco.resources.ownership import AsyncOwnership, Ownership
 from vynco.resources.persons import AsyncPersons, Persons
+from vynco.resources.pipelines import AsyncPipelines, Pipelines
+from vynco.resources.reports import AsyncReports, Reports
+from vynco.resources.saved_searches import AsyncSavedSearches, SavedSearches
 from vynco.resources.screening import AsyncScreening, Screening
 from vynco.resources.teams import AsyncTeams, Teams
 from vynco.resources.watchlists import AsyncWatchlists, Watchlists
@@ -82,6 +85,9 @@ class AsyncClient(BaseClientConfig):
         self.graph = AsyncGraph(self)
         self.alerts = AsyncAlerts(self)
         self.ownership = AsyncOwnership(self)
+        self.reports = AsyncReports(self)
+        self.pipelines = AsyncPipelines(self)
+        self.saved_searches = AsyncSavedSearches(self)
 
     async def _request(
         self,
@@ -212,6 +218,9 @@ class Client(BaseClientConfig):
         self.graph = Graph(self)
         self.alerts = Alerts(self)
         self.ownership = Ownership(self)
+        self.reports = Reports(self)
+        self.pipelines = Pipelines(self)
+        self.saved_searches = SavedSearches(self)
 
     def _request(
         self,

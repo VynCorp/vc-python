@@ -9,6 +9,8 @@ from vynco.types.ai import (
     DossierResponse,
     RiskScoreResponse,
 )
+from vynco.types.comparative import ComparativeResponse
+from vynco.types.predictive_risk import PredictiveRiskResponse
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
@@ -64,6 +66,38 @@ class AsyncAi:
             response_type=BatchRiskScoreResponse,
         )
 
+    async def comparative(
+        self, *, uids: list[str], focus: str | None = None
+    ) -> Response[ComparativeResponse]:
+        """Generate an AI comparative dossier for 2-5 companies.
+
+        ``focus`` is one of ``governance``, ``financial``, ``risk``, or
+        ``all`` (default).
+        """
+        body: dict[str, Any] = {"uids": uids}
+        if focus is not None:
+            body["focus"] = focus
+        return await self._client._request_model(
+            "POST",
+            "/v1/ai/comparative",
+            json=body,
+            response_type=ComparativeResponse,
+        )
+
+    async def predictive_risk(
+        self, *, uid: str, lookback_days: int | None = None
+    ) -> Response[PredictiveRiskResponse]:
+        """Get predictive risk scoring with dissolution probability."""
+        body: dict[str, Any] = {}
+        if lookback_days is not None:
+            body["lookbackDays"] = lookback_days
+        return await self._client._request_model(
+            "POST",
+            f"/v1/risk/predictive/{uid}",
+            json=body,
+            response_type=PredictiveRiskResponse,
+        )
+
 
 class Ai:
     """Sync AI operations."""
@@ -113,4 +147,32 @@ class Ai:
             "/v1/ai/risk-score/batch",
             json={"uids": uids},
             response_type=BatchRiskScoreResponse,
+        )
+
+    def comparative(
+        self, *, uids: list[str], focus: str | None = None
+    ) -> Response[ComparativeResponse]:
+        """Generate an AI comparative dossier for 2-5 companies."""
+        body: dict[str, Any] = {"uids": uids}
+        if focus is not None:
+            body["focus"] = focus
+        return self._client._request_model(
+            "POST",
+            "/v1/ai/comparative",
+            json=body,
+            response_type=ComparativeResponse,
+        )
+
+    def predictive_risk(
+        self, *, uid: str, lookback_days: int | None = None
+    ) -> Response[PredictiveRiskResponse]:
+        """Get predictive risk scoring with dissolution probability."""
+        body: dict[str, Any] = {}
+        if lookback_days is not None:
+            body["lookbackDays"] = lookback_days
+        return self._client._request_model(
+            "POST",
+            f"/v1/risk/predictive/{uid}",
+            json=body,
+            response_type=PredictiveRiskResponse,
         )

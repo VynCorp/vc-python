@@ -4,7 +4,7 @@ import builtins
 from typing import TYPE_CHECKING
 
 from vynco._base_client import _build_params
-from vynco._response import Response
+from vynco._response import Response, ResponseMeta
 from vynco.types.changes import ChangeStatistics, CompanyChange
 from vynco.types.shared import PaginatedResponse
 
@@ -55,6 +55,10 @@ class AsyncChanges:
             response_type=ChangeStatistics,
         )
 
+    async def review(self, id: str) -> ResponseMeta:
+        """Mark a change as reviewed (compliance workflow)."""
+        return await self._client._request_empty("PUT", f"/v1/changes/{id}/review")
+
 
 class Changes:
     """Sync change feed operations."""
@@ -96,3 +100,7 @@ class Changes:
             "/v1/changes/statistics",
             response_type=ChangeStatistics,
         )
+
+    def review(self, id: str) -> ResponseMeta:
+        """Mark a change as reviewed (compliance workflow)."""
+        return self._client._request_empty("PUT", f"/v1/changes/{id}/review")

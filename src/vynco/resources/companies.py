@@ -26,6 +26,7 @@ from vynco.types.companies import (
     TagSummary,
 )
 from vynco.types.media import MediaAnalysisResponse, MediaResponse
+from vynco.types.pdf import PdfProfileResponse
 from vynco.types.shared import PaginatedResponse
 from vynco.types.similar import SimilarCompaniesResponse
 from vynco.types.timeline import TimelineResponse, TimelineSummaryResponse
@@ -406,6 +407,16 @@ class AsyncCompanies:
             "POST",
             f"/v1/companies/{uid}/media/analyze",
             response_type=MediaAnalysisResponse,
+        )
+
+    # -- PDF export --
+
+    async def pdf(self, uid: str) -> Response[PdfProfileResponse]:
+        """Get structured company profile data suitable for PDF rendering."""
+        return await self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/pdf",
+            response_type=PdfProfileResponse,
         )
 
     # -- CSV export --
@@ -812,6 +823,16 @@ class Companies:
             "POST",
             f"/v1/companies/{uid}/media/analyze",
             response_type=MediaAnalysisResponse,
+        )
+
+    # -- PDF export --
+
+    def pdf(self, uid: str) -> Response[PdfProfileResponse]:
+        """Get structured company profile data suitable for PDF rendering."""
+        return self._client._request_model(
+            "GET",
+            f"/v1/companies/{uid}/pdf",
+            response_type=PdfProfileResponse,
         )
 
     # -- CSV export --
