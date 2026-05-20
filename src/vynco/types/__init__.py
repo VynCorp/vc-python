@@ -67,7 +67,6 @@ from vynco.types.comparative import (
     GovernanceScore,
     OverlapCompanyRole,
 )
-from vynco.types.credits import CreditBalance, CreditHistory, CreditLedgerEntry, CreditUsage
 from vynco.types.dashboard import DashboardResponse, DataCompleteness, PipelineStatus
 from vynco.types.dossiers import Dossier, DossierSummary
 from vynco.types.exports import ExportDownload, ExportJob
@@ -135,6 +134,7 @@ from vynco.types.ubo import (
     UboPerson,
     UboResponse,
 )
+from vynco.types.usage import GroupUsage, UsageSnapshot
 from vynco.types.watchlists import (
     AddCompaniesResponse,
     Watchlist,
@@ -218,11 +218,9 @@ __all__ = [
     # API Keys
     "ApiKey",
     "ApiKeyCreated",
-    # Credits
-    "CreditBalance",
-    "CreditUsage",
-    "CreditHistory",
-    "CreditLedgerEntry",
+    # Usage
+    "GroupUsage",
+    "UsageSnapshot",
     # Billing
     "SessionUrl",
     # Teams

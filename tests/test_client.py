@@ -50,15 +50,15 @@ def test_default_base_url():
 
 async def test_authorization_header_is_set():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/v1/credits/balance").mock(
+        route = mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 200,
-                json={"balance": 1000, "monthlyCredits": 500, "tier": "starter"},
+                json={"tier": "starter", "groups": []},
             )
         )
 
         client = vynco.AsyncClient("vc_test_123", base_url=BASE_URL, max_retries=0)
-        await client.credits.balance()
+        await client.usage.current()
 
         assert route.called
         request = route.calls[0].request
@@ -89,7 +89,7 @@ async def test_not_found_error():
 
 async def test_authentication_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 401,
                 json={"detail": "Invalid API key", "status": 401},
@@ -98,13 +98,13 @@ async def test_authentication_error():
 
         client = vynco.AsyncClient("vc_test_bad", base_url=BASE_URL, max_retries=0)
         with pytest.raises(vynco.AuthenticationError) as exc_info:
-            await client.credits.balance()
+            await client.usage.current()
         assert exc_info.value.detail == "Invalid API key"
 
 
 async def test_rate_limit_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 429,
                 json={"detail": "Rate limit exceeded", "status": 429},
@@ -113,13 +113,13 @@ async def test_rate_limit_error():
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
         with pytest.raises(vynco.RateLimitError) as exc_info:
-            await client.credits.balance()
+            await client.usage.current()
         assert exc_info.value.detail == "Rate limit exceeded"
 
 
 async def test_server_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 500,
                 json={"detail": "Internal server error", "status": 500},
@@ -128,7 +128,7 @@ async def test_server_error():
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
         with pytest.raises(vynco.ServerError) as exc_info:
-            await client.credits.balance()
+            await client.usage.current()
         assert exc_info.value.detail == "Internal server error"
 
 
@@ -194,7 +194,7 @@ async def test_conflict_error():
 
 async def test_service_unavailable_error():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 503,
                 json={"detail": "Service temporarily unavailable", "status": 503},
@@ -203,7 +203,7 @@ async def test_service_unavailable_error():
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
         with pytest.raises(vynco.ServiceUnavailableError) as exc_info:
-            await client.credits.balance()
+            await client.usage.current()
         assert exc_info.value.detail == "Service temporarily unavailable"
 
 
@@ -258,51 +258,39 @@ async def test_response_meta_from_headers():
 
 async def test_retry_on_429():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/v1/credits/balance").mock(
+        route = mock.get("/v1/usage/current").mock(
             side_effect=[
                 httpx.Response(429, json={"detail": "Rate limited", "status": 429}),
                 httpx.Response(
                     200,
-                    json={
-                        "balance": 100,
-                        "monthlyCredits": 500,
-                        "usedThisMonth": 400,
-                        "tier": "free",
-                        "overageRate": 0.0,
-                    },
+                    json={"tier": "free", "groups": []},
                 ),
             ]
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=1)
-        resp = await client.credits.balance()
+        resp = await client.usage.current()
 
-        assert resp.data.balance == 100
+        assert resp.data.tier == "free"
         assert route.call_count == 2
 
 
 async def test_retry_on_500():
     with respx.mock(base_url=BASE_URL) as mock:
-        route = mock.get("/v1/credits/balance").mock(
+        route = mock.get("/v1/usage/current").mock(
             side_effect=[
                 httpx.Response(500, json={"detail": "Server error", "status": 500}),
                 httpx.Response(
                     200,
-                    json={
-                        "balance": 100,
-                        "monthlyCredits": 500,
-                        "usedThisMonth": 400,
-                        "tier": "free",
-                        "overageRate": 0.0,
-                    },
+                    json={"tier": "free", "groups": []},
                 ),
             ]
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=1)
-        resp = await client.credits.balance()
+        resp = await client.usage.current()
 
-        assert resp.data.balance == 100
+        assert resp.data.tier == "free"
         assert route.call_count == 2
 
 
@@ -329,41 +317,28 @@ async def test_no_retry_on_404():
 
 def test_sync_client_works():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 200,
-                json={
-                    "balance": 4500,
-                    "monthlyCredits": 5000,
-                    "usedThisMonth": 500,
-                    "tier": "professional",
-                    "overageRate": 0.005,
-                },
+                json={"tier": "professional", "groups": []},
             )
         )
 
         client = vynco.Client("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = client.credits.balance()
+        resp = client.usage.current()
 
-        assert resp.data.balance == 4500
         assert resp.data.tier == "professional"
 
 
 def test_sync_context_manager():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 200,
-                json={
-                    "balance": 100,
-                    "monthlyCredits": 500,
-                    "usedThisMonth": 400,
-                    "tier": "free",
-                    "overageRate": 0.0,
-                },
+                json={"tier": "free", "groups": []},
             )
         )
 
         with vynco.Client("vc_test_key", base_url=BASE_URL, max_retries=0) as client:
-            resp = client.credits.balance()
-            assert resp.data.balance == 100
+            resp = client.usage.current()
+            assert resp.data.tier == "free"

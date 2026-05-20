@@ -16,7 +16,6 @@ from vynco.resources.auditors import AsyncAuditors, Auditors
 from vynco.resources.billing import AsyncBilling, Billing
 from vynco.resources.changes import AsyncChanges, Changes
 from vynco.resources.companies import AsyncCompanies, Companies
-from vynco.resources.credits import AsyncCredits, Credits
 from vynco.resources.dashboard import AsyncDashboard, Dashboard
 from vynco.resources.dossiers import AsyncDossiers, Dossiers
 from vynco.resources.exports import AsyncExports, Exports
@@ -29,6 +28,7 @@ from vynco.resources.reports import AsyncReports, Reports
 from vynco.resources.saved_searches import AsyncSavedSearches, SavedSearches
 from vynco.resources.screening import AsyncScreening, Screening
 from vynco.resources.teams import AsyncTeams, Teams
+from vynco.resources.usage import AsyncUsage, Usage
 from vynco.resources.watchlists import AsyncWatchlists, Watchlists
 from vynco.resources.webhooks import AsyncWebhooks, Webhooks
 
@@ -75,7 +75,7 @@ class AsyncClient(BaseClientConfig):
         self.exports = AsyncExports(self)
         self.ai = AsyncAi(self)
         self.api_keys = AsyncApiKeys(self)
-        self.credits = AsyncCredits(self)
+        self.usage = AsyncUsage(self)
         self.billing = AsyncBilling(self)
         self.teams = AsyncTeams(self)
         self.changes = AsyncChanges(self)
@@ -208,7 +208,7 @@ class Client(BaseClientConfig):
         self.exports = Exports(self)
         self.ai = Ai(self)
         self.api_keys = ApiKeys(self)
-        self.credits = Credits(self)
+        self.usage = Usage(self)
         self.billing = Billing(self)
         self.teams = Teams(self)
         self.changes = Changes(self)

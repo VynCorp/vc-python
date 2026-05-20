@@ -37,58 +37,44 @@ async def test_health_check():
 
 
 # ---------------------------------------------------------------------------
-# Credits
+# Usage
 # ---------------------------------------------------------------------------
 
 
-async def test_credit_balance():
+async def test_usage_current():
     with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/balance").mock(
+        mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 200,
                 json={
-                    "balance": 4500,
-                    "monthlyCredits": 5000,
-                    "usedThisMonth": 500,
                     "tier": "professional",
-                    "overageRate": 0.005,
-                },
-            )
-        )
-
-        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.credits.balance()
-
-        assert resp.data.balance == 4500
-        assert resp.data.tier == "professional"
-
-
-async def test_credit_history():
-    with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/v1/credits/history").mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "items": [
+                    "groups": [
                         {
-                            "id": 1,
-                            "entryType": "debit",
-                            "amount": -1,
-                            "balance": 4999,
-                            "description": "company.get",
-                            "createdAt": "2026-03-17T12:00:00Z",
-                        }
+                            "group": "search",
+                            "used": 12,
+                            "limit": 600,
+                            "window": "hour",
+                            "resetSeconds": 1800,
+                        },
+                        {
+                            "group": "bulk",
+                            "used": None,
+                            "limit": None,
+                            "window": "day",
+                            "resetSeconds": 40000,
+                        },
                     ],
-                    "total": 1,
                 },
             )
         )
 
         client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
-        resp = await client.credits.history(limit=10)
+        resp = await client.usage.current()
 
-        assert len(resp.data.items) == 1
-        assert resp.data.items[0].entry_type == "debit"
+        assert resp.data.tier == "professional"
+        assert resp.data.groups[0].group == "search"
+        assert resp.data.groups[0].limit == 600
+        assert resp.data.groups[1].used is None
 
 
 # ---------------------------------------------------------------------------
