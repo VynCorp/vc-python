@@ -57,7 +57,13 @@ class AsyncScreening:
         """Browse SECO/OpenSanctions/FINMA sanctions databases with search and pagination."""
         from vynco._base_client import _build_params
 
-        params = _build_params({k: v for k, v in locals().items() if k != "self"})
+        params = _build_params(
+            {"search": search, "program": program, "page": page, "page_size": page_size}
+        )
+        # This endpoint's handler expects snake_case `entity_type`, unlike the
+        # camelCase every other endpoint uses.
+        if entity_type is not None:
+            params["entity_type"] = entity_type
         return await self._client._request_model(
             "GET",
             "/v1/sanctions",
@@ -113,7 +119,13 @@ class Screening:
         """Browse SECO/OpenSanctions/FINMA sanctions databases with search and pagination."""
         from vynco._base_client import _build_params
 
-        params = _build_params({k: v for k, v in locals().items() if k != "self"})
+        params = _build_params(
+            {"search": search, "program": program, "page": page, "page_size": page_size}
+        )
+        # This endpoint's handler expects snake_case `entity_type`, unlike the
+        # camelCase every other endpoint uses.
+        if entity_type is not None:
+            params["entity_type"] = entity_type
         return self._client._request_model(
             "GET",
             "/v1/sanctions",

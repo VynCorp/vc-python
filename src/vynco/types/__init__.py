@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from vynco.types.ai import (
     AiSearchResponse,
+    AiSearchResult,
     BatchRiskScoreResponse,
     DossierResponse,
     RiskFactor,
@@ -209,6 +210,7 @@ __all__ = [
     # AI
     "DossierResponse",
     "AiSearchResponse",
+    "AiSearchResult",
     "RiskScoreResponse",
     "RiskFactor",
     "RiskScoreResult",

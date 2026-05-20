@@ -44,6 +44,19 @@ class AsyncPipelines:
             "GET", f"/v1/pipelines/{id}", response_type=PipelineWithEntries
         )
 
+    async def update(
+        self, id: str, *, name: str | None = None, stages: _list[str] | None = None
+    ) -> Response[Pipeline]:
+        """Rename a pipeline or change its stages."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        if stages is not None:
+            body["stages"] = stages
+        return await self._client._request_model(
+            "PUT", f"/v1/pipelines/{id}", json=body, response_type=Pipeline
+        )
+
     async def delete(self, id: str) -> ResponseMeta:
         """Delete a pipeline."""
         return await self._client._request_empty("DELETE", f"/v1/pipelines/{id}")
@@ -133,6 +146,19 @@ class Pipelines:
         """Get a pipeline with all its entries."""
         return self._client._request_model(
             "GET", f"/v1/pipelines/{id}", response_type=PipelineWithEntries
+        )
+
+    def update(
+        self, id: str, *, name: str | None = None, stages: _list[str] | None = None
+    ) -> Response[Pipeline]:
+        """Rename a pipeline or change its stages."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        if stages is not None:
+            body["stages"] = stages
+        return self._client._request_model(
+            "PUT", f"/v1/pipelines/{id}", json=body, response_type=Pipeline
         )
 
     def delete(self, id: str) -> ResponseMeta:

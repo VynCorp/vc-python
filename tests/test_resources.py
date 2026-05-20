@@ -257,8 +257,9 @@ async def test_team_me():
                     "name": "Acme Corp",
                     "slug": "acme-corp",
                     "tier": "enterprise",
-                    "creditBalance": 10000,
-                    "monthlyCredits": 10000,
+                    "stripeSubscriptionId": "sub_123",
+                    "currentPeriodEnd": "2026-12-31T00:00:00Z",
+                    "cancellationEffectiveAt": None,
                 },
             )
         )
@@ -267,7 +268,10 @@ async def test_team_me():
         resp = await client.teams.me()
 
         assert resp.data.name == "Acme Corp"
-        assert resp.data.credit_balance == 10000
+        assert resp.data.tier == "enterprise"
+        assert resp.data.stripe_subscription_id == "sub_123"
+        assert resp.data.current_period_end == "2026-12-31T00:00:00Z"
+        assert resp.data.cancellation_effective_at is None
 
 
 async def test_team_members():

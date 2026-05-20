@@ -27,7 +27,7 @@ class WatchlistCompanyEntry(VyncoModel):
     """An enriched company entry in a watchlist response."""
 
     uid: str
-    name: str | None = None
+    name: str = ""
     status: str | None = None
     canton: str | None = None
 

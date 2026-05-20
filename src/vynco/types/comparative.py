@@ -59,6 +59,6 @@ class ComparativeResponse(VyncoModel):
     focus: str = ""
     report: str = ""
     board_overlaps: list[BoardOverlap] = []
-    auditor_analysis: AuditorAnalysis | None = None
+    auditor_analysis: AuditorAnalysis = AuditorAnalysis()
     governance_scores: list[GovernanceScore] = []
     generated_at: str = ""

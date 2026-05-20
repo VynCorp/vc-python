@@ -10,8 +10,9 @@ class Team(VyncoModel):
     name: str = ""
     slug: str = ""
     tier: str = ""
-    credit_balance: int = 0
-    monthly_credits: int = 0
+    stripe_subscription_id: str | None = None
+    current_period_end: str | None = None
+    cancellation_effective_at: str | None = None
 
 
 class TeamMember(VyncoModel):
@@ -38,20 +39,16 @@ class Invitation(VyncoModel):
 
 
 class MemberUsage(VyncoModel):
-    """Credit usage by a team member."""
+    """A team member listed in the billing summary."""
 
     user_id: str
     name: str = ""
-    credits_used: int = 0
 
 
 class BillingSummary(VyncoModel):
     """Team billing summary."""
 
     tier: str = ""
-    credit_balance: int = 0
-    monthly_credits: int = 0
-    used_this_month: int = 0
     members: list[MemberUsage] = []
 
 
