@@ -680,3 +680,29 @@ async def test_dossier_includes_citations():
         assert len(resp.data.citations) == 1
         assert resp.data.citations[0].regulation_id == "GwG"
         assert resp.data.citations[0].source_url == "https://example.ch/gwg"
+
+
+async def test_company_list_new_filters_serialize_to_camelcase():
+    # Regression: new SearchParams filters must hit the camelCase wire keys.
+    with respx.mock(base_url=BASE_URL) as mock:
+        route = mock.get("/v1/companies").mock(
+            return_value=httpx.Response(200, json={"items": [], "total": 0})
+        )
+
+        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
+        await client.companies.list(
+            is_finma_regulated=True,
+            noga_section="K",
+            data_quality_min=0.5,
+            has_lei=True,
+            status_canonical="active",
+            uids="CHE-1,CHE-2",
+        )
+
+        params = route.calls[0].request.url.params
+        assert params["isFinmaRegulated"] == "true"
+        assert params["nogaSection"] == "K"
+        assert params["dataQualityMin"] == "0.5"
+        assert params["hasLei"] == "true"
+        assert params["statusCanonical"] == "active"
+        assert params["uids"] == "CHE-1,CHE-2"

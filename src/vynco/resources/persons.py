@@ -50,10 +50,18 @@ class AsyncPersons:
         self,
         *,
         q: str | None = None,
+        role_category: str | None = None,
+        signing_authority: str | None = None,
+        canton: str | None = None,
+        nationality_iso: str | None = None,
+        place_of_origin: str | None = None,
+        is_active: bool | None = None,
+        sort_by: str | None = None,
+        sort_desc: bool | None = None,
         page: int | None = None,
         page_size: int | None = None,
     ) -> Response[PaginatedResponse[PersonSearchResult]]:
-        """Search persons by name."""
+        """Search persons by name and optional filters."""
         params = _build_params({k: v for k, v in locals().items() if k != "self"})
         return await self._client._request_model(
             "GET",
@@ -115,10 +123,18 @@ class Persons:
         self,
         *,
         q: str | None = None,
+        role_category: str | None = None,
+        signing_authority: str | None = None,
+        canton: str | None = None,
+        nationality_iso: str | None = None,
+        place_of_origin: str | None = None,
+        is_active: bool | None = None,
+        sort_by: str | None = None,
+        sort_desc: bool | None = None,
         page: int | None = None,
         page_size: int | None = None,
     ) -> Response[PaginatedResponse[PersonSearchResult]]:
-        """Search persons by name."""
+        """Search persons by name and optional filters."""
         params = _build_params({k: v for k, v in locals().items() if k != "self"})
         return self._client._request_model(
             "GET",

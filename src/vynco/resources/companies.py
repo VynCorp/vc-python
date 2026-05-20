@@ -62,6 +62,23 @@ class AsyncCompanies:
         lei: str | None = None,
         duns: str | None = None,
         isin: str | None = None,
+        founded_after: str | None = None,
+        founded_before: str | None = None,
+        min_changes: int | None = None,
+        enriched: bool | None = None,
+        board_member_search: str | None = None,
+        uids: str | None = None,
+        is_finma_regulated: bool | None = None,
+        noga_section: str | None = None,
+        noga_division: str | None = None,
+        noga_code: str | None = None,
+        data_quality_min: float | None = None,
+        data_quality_max: float | None = None,
+        status_canonical: str | None = None,
+        legal_form_code: str | None = None,
+        has_auditor: bool | None = None,
+        has_lei: bool | None = None,
+        has_wikidata: bool | None = None,
     ) -> Response[PaginatedResponse[Company]]:
         """List companies with optional filtering and pagination.
 
@@ -101,9 +118,11 @@ class AsyncCompanies:
             response_type=CompanyCount,
         )
 
-    async def events(self, uid: str, *, limit: int | None = None) -> Response[EventListResponse]:
+    async def events(
+        self, uid: str, *, limit: int | None = None, include_internal: bool | None = None
+    ) -> Response[EventListResponse]:
         """Get events for a company."""
-        params = _build_params({"limit": limit})
+        params = _build_params({"limit": limit, "include_internal": include_internal})
         return await self._client._request_model(
             "GET",
             f"/v1/companies/{uid}/events",
@@ -493,6 +512,23 @@ class Companies:
         lei: str | None = None,
         duns: str | None = None,
         isin: str | None = None,
+        founded_after: str | None = None,
+        founded_before: str | None = None,
+        min_changes: int | None = None,
+        enriched: bool | None = None,
+        board_member_search: str | None = None,
+        uids: str | None = None,
+        is_finma_regulated: bool | None = None,
+        noga_section: str | None = None,
+        noga_division: str | None = None,
+        noga_code: str | None = None,
+        data_quality_min: float | None = None,
+        data_quality_max: float | None = None,
+        status_canonical: str | None = None,
+        legal_form_code: str | None = None,
+        has_auditor: bool | None = None,
+        has_lei: bool | None = None,
+        has_wikidata: bool | None = None,
     ) -> Response[PaginatedResponse[Company]]:
         """List companies with optional filtering and pagination.
 
@@ -532,9 +568,11 @@ class Companies:
             response_type=CompanyCount,
         )
 
-    def events(self, uid: str, *, limit: int | None = None) -> Response[EventListResponse]:
+    def events(
+        self, uid: str, *, limit: int | None = None, include_internal: bool | None = None
+    ) -> Response[EventListResponse]:
         """Get events for a company."""
-        params = _build_params({"limit": limit})
+        params = _build_params({"limit": limit, "include_internal": include_internal})
         return self._client._request_model(
             "GET",
             f"/v1/companies/{uid}/events",
