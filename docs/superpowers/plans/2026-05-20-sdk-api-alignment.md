@@ -650,12 +650,22 @@ struct for consistency, after which the SDK special-case can be removed.
   return **403 → `ForbiddenError`** on a free key — their models are verified
   structurally (handler signatures + unit tests) but not yet against live data;
   re-run the probe with a professional+ key to validate those.
-- **Examples:** `quickstart.py` runs end-to-end against prod (search → full detail →
-  real rate-limit metadata: `limit=60`). `company_network.py` runs through graph
-  (8K nodes) then hits a professional-tier 403 on `graph.analyze`. Professional/
-  enterprise examples (due_diligence, ubo_resolution, predictive_risk, bulk_export)
-  require a higher-tier key. Examples do not currently catch `ForbiddenError`, so they
-  crash rather than degrade on an under-provisioned key.
+- **Examples (all 8, now tier-resilient):** every example was refactored to use
+  `examples/_common.py::section()`, which degrades gracefully on `ForbiddenError`
+  (tier gate), `RateLimitError`, and transient `ServerError`. Verified live on the
+  free key — **all 8 run to completion**: free-tier sections show real data
+  (companies, changes, reports, statistics, sanctions browse, network graph 8K nodes),
+  tier-gated sections print a clear skip note (basic/professional/bulk). The
+  `screening.browse_sanctions` `entity_type` fix is confirmed live (sanctions return
+  `(entity)`).
+- **Notebooks (6):** statically verified v4.0.0-compatible — they call only current
+  SDK methods (no `client.credits`, no `credits_used`, no `starter`) and the only
+  changed fields they read (`company_value`, `peers_with_data`) are now non-optional,
+  which is read-compatible. Headless execution of `industry_intelligence.ipynb`
+  (ephemeral matplotlib/seaborn/networkx) ran 4/6 code cells; the 2 failures are
+  `ForbiddenError` tier gates, not API breakage. Full notebook execution needs a
+  Professional+ key (every notebook hits `analytics_read` or `expensive_ai`) plus the
+  viz deps (matplotlib/seaborn/networkx — not in project deps; see notebooks/README).
 - **`audit-log` endpoint:** the only in-router endpoint left unmodelled (Enterprise
   admin console). Deliberately out of the selected scope; the gap script reports it
   as the sole "missing" entry.
