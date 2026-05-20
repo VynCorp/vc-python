@@ -7,11 +7,11 @@ Usage:
 
 from __future__ import annotations
 
-import vynco
+from _common import get_client
 
 
 def main() -> None:
-    client = vynco.Client()
+    client = get_client()
 
     # --- Check API health ---
     health = client.health.check()
