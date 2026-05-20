@@ -41,7 +41,7 @@ def main() -> None:
     path = output_dir / export.filename
     path.write_bytes(export.bytes)
     print(f"   Saved: {path} ({len(export.bytes):,} bytes, {export.content_type})")
-    print(f"   Credits used: {export.meta.credits_used}\n")
+    print(f"   Rate remaining: {export.meta.rate_limit_remaining}\n")
 
     # --- Bulk export with filters ---
     print("2. Bulk Export (filtered by canton)")

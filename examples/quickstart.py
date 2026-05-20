@@ -57,8 +57,8 @@ def main() -> None:
     # --- Response metadata (every call includes this) ---
     print(
         f"\n[Request {detail.meta.request_id} | "
-        f"Credits used: {detail.meta.credits_used} | "
-        f"Remaining: {detail.meta.credits_remaining}]"
+        f"Rate limit: {detail.meta.rate_limit_limit} | "
+        f"Remaining: {detail.meta.rate_limit_remaining}]"
     )
 
 

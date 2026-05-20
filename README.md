@@ -110,22 +110,33 @@ See [examples/README.md](examples/README.md) and [notebooks/README.md](notebooks
 | `client.companies` | `list`, `get`, `get_full`, `count`, `events`, `statistics`, `compare`, `news`, `reports`, `relationships`, `hierarchy`, `classification`, `fingerprint`, `structure`, `acquisitions`, `nearby`, `timeline`, `timeline_summary`, `similar`, `ubo`, `media`, `media_analyze`, `notes`, `create_note`, `update_note`, `delete_note`, `tags`, `create_tag`, `delete_tag`, `all_tags`, `export_csv` |
 | `client.auditors` | `history`, `tenures` |
 | `client.dashboard` | `get` |
-| `client.screening` | `screen`, `batch` |
+| `client.screening` | `screen`, `batch`, `browse_sanctions` |
 | `client.watchlists` | `list`, `create`, `delete`, `companies`, `add_companies`, `remove_company`, `events` |
+| `client.watches` | `list`, `add`, `remove` |
 | `client.webhooks` | `list`, `create`, `update`, `delete`, `test`, `deliveries` |
-| `client.exports` | `create`, `get`, `download` |
-| `client.ai` | `dossier`, `search`, `risk_score`, `risk_score_batch` |
+| `client.exports` | `create`, `get`, `download`, `bulk_profiles` |
+| `client.bulk` | `export`, `screening`, `add_to_watchlist` |
+| `client.ai` | `dossier`, `search`, `risk_score`, `risk_score_batch`, `comparative`, `predictive_risk` |
+| `client.risk` | `v2` |
 | `client.api_keys` | `list`, `create`, `revoke` |
-| `client.credits` | `balance`, `usage`, `history` |
+| `client.usage` | `current` |
 | `client.billing` | `create_checkout`, `create_portal` |
 | `client.teams` | `me`, `create`, `members`, `invite_member`, `update_member_role`, `remove_member`, `billing_summary`, `join` |
-| `client.changes` | `list`, `by_company`, `statistics` |
+| `client.changes` | `list`, `by_company`, `statistics`, `review`, `diff` |
 | `client.persons` | `board_members`, `search`, `get`, `network` |
-| `client.analytics` | `cantons`, `auditors`, `cluster`, `anomalies`, `rfm_segments`, `cohorts`, `candidates`, `flows`, `migrations`, `benchmark` |
+| `client.analytics` | `cantons`, `auditors`, `cluster`, `anomalies`, `rfm_segments`, `cohorts`, `candidates`, `prospects`, `flows`, `migrations`, `benchmark` |
 | `client.dossiers` | `create`, `list`, `get`, `delete`, `generate` |
 | `client.graph` | `get`, `export`, `analyze` |
 | `client.alerts` | `list`, `create`, `delete` |
-| `client.ownership` | `trace` |
+| `client.ownership` | `trace`, `analytics` |
+| `client.audit` | `playbook` |
+| `client.compliance` | `scope` |
+| `client.pipelines` | `list`, `create`, `get`, `update`, `delete`, `add_entry`, `update_entry`, `remove_entry`, `stats` |
+| `client.reports` | `industries`, `get`, `generate` |
+| `client.saved_searches` | `list`, `create`, `get`, `update`, `delete` |
+| `client.notifications` | `list`, `mark_read`, `get_preferences`, `update_preferences`, `test` |
+| `client.settings` | `get_preferences`, `update_preferences` |
+| `client.sync` | `status` |
 
 ### New in v3.1
 
@@ -151,8 +162,8 @@ Every response includes header metadata for credit tracking and rate limiting:
 resp = client.companies.get("CHE-101.329.561")
 
 print(f"Request ID: {resp.meta.request_id}")               # X-Request-Id
-print(f"Credits used: {resp.meta.credits_used}")            # X-Credits-Used
-print(f"Credits remaining: {resp.meta.credits_remaining}")  # X-Credits-Remaining
+print(f"Rate group: {resp.meta.rate_limit_group}")         # X-RateLimit-Group
+print(f"Rate window: {resp.meta.rate_limit_window}")        # X-RateLimit-Window
 print(f"Rate limit: {resp.meta.rate_limit_limit}")          # X-RateLimit-Limit
 print(f"Rate remaining: {resp.meta.rate_limit_remaining}")  # X-RateLimit-Remaining
 print(f"Rate reset: {resp.meta.rate_limit_reset}")          # X-RateLimit-Reset

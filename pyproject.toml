@@ -1,6 +1,6 @@
 [project]
 name = "vynco"
-version = "3.2.1"
+version = "4.0.0"
 description = "Python SDK for the VynCo Swiss Corporate Intelligence API"
 readme = "README.md"
 license = "Apache-2.0"

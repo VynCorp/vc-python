@@ -66,9 +66,7 @@ def is_out_of_scope(normalised_api_path: str) -> bool:
         # Normalise the prefix itself (no-op here since prefixes have no /v1,
         # but collapse params just in case).
         norm_prefix = _PARAM_RE.sub("{}", prefix)
-        if normalised_api_path == norm_prefix or normalised_api_path.startswith(
-            norm_prefix + "/"
-        ):
+        if normalised_api_path == norm_prefix or normalised_api_path.startswith(norm_prefix + "/"):
             return True
     return False
 
@@ -161,9 +159,7 @@ def main() -> None:
     phantom = sorted(sdk_paths - api_paths)
 
     # Missing: API has it, SDK doesn't, and it's in-scope
-    missing = sorted(
-        p for p in (api_paths - sdk_paths) if not is_out_of_scope(p)
-    )
+    missing = sorted(p for p in (api_paths - sdk_paths) if not is_out_of_scope(p))
 
     print("=" * 60)
     print("SDK-only (phantom — fix or remove)")
