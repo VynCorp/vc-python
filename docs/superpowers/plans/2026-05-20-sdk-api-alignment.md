@@ -605,3 +605,30 @@ are always absent now.
 - Update tests that assert on `meta.credits_used` / mock `X-Credits-*` headers to use the
   `X-RateLimit-*` set instead.
 - Breaking change → belongs in the 4.0.0 CHANGELOG (Task 32).
+
+### Phase 2 reconciliation outcome (Tasks 4–19)
+Driven by 5 parallel read-only analyst passes. Fully-aligned (no change): exports,
+reports, graph, webhooks, saved_searches, alerts, api_keys, auditors, billing,
+dashboard, health. Fixed (committed in waves):
+- P0 correctness: `UboPerson.person_id` int→str; `UboResponse` parent LEI/name;
+  `DiffEntry.from` alias; `Dossier.citations`.
+- Model completion / nullability: Company (5 fields), AuditCandidate (5),
+  BenchmarkDimension nullability, MigrationResponse note, persons nationality_iso/
+  display, teams (phantom credits → subscription fields), BillingSummary/MemberUsage,
+  watchlists name, comparative auditor_analysis, ai.search → AiSearchResult.
+- Params: companies.list (17 filters), include_internal on companies.events /
+  changes.list / changes.by_company / watchlists.events, persons.search (8 filters).
+- Resource gap: pipelines.update().
+- Bug: screening.browse_sanctions leaked `_build_params` into the query via `locals()`.
+
+**Deliberately left as-is:** harmless "ghost" fields the SDK declares but the API
+doesn't currently return (Company GLEIF-provenance fields, PersonEntry/PersonRoleDetail/
+NetworkCompany role_* enrichment stubs). They are `extra="ignore"`-safe and removing
+them would be a needless breaking change.
+
+### API inconsistency to flag (not an SDK bug)
+`GET /v1/sanctions` (`SanctionsSearchParams`) is the only query-param struct using a
+snake_case key (`entity_type`) while every other endpoint is camelCase. The SDK now
+sends snake_case for this one endpoint. Recommend the API add
+`#[serde(rename_all = "camelCase")]` (or `#[serde(rename = "entityType")]`) to that
+struct for consistency, after which the SDK special-case can be removed.
