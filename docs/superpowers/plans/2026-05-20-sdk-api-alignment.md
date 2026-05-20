@@ -584,3 +584,24 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 - Spec coverage: source-of-truth precedence (Task 1 + PROCEDURE-A/B), credits→usage (Task 2), tier rename (Task 3), per-resource reconciliation (Tasks 4–19), all high-value additions — account/usage set (20–22), intelligence set (23–26), bulk (27), watches (28) — unit tests woven into every task, live smoke (29–30), verification + 4.0.0 release (31–32). All design sections mapped.
 - Out-of-scope endpoints (auth/blog/widget/public/stripe/monitoring/sync-trigger) are excluded by the gap script's `OUT_OF_SCOPE_PREFIXES` and never given a task.
 - Live verification depends on a real key; Task 30 is explicitly marked BLOCKABLE.
+
+---
+
+## Discovered during execution
+
+### Task 3b: Reconcile `ResponseMeta` rate-limit headers (BREAKING)
+Found during Task 2. The API emits `X-RateLimit-Group/-Window/-Limit/-Remaining/-Reset`
+(see `VynCorpApi/src/middleware/rate_limit_headers.rs`) and emits **no** `X-Credits-*`
+headers anywhere. The SDK's `ResponseMeta` (`src/vynco/_response.py`) and header parser
+(`src/vynco/_base_client.py`) still read `X-Credits-Used` / `X-Credits-Remaining`, which
+are always absent now.
+
+**Files:** `src/vynco/_response.py`, `src/vynco/_base_client.py`, `tests/test_client.py`, `tests/test_companies.py`.
+- Replace `ResponseMeta.credits_used` / `credits_remaining` with rate-limit fields:
+  `rate_limit_group: str | None`, `rate_limit_window: str | None`,
+  `rate_limit_limit: int | None`, `rate_limit_remaining: int | None`,
+  `rate_limit_reset: int | None`.
+- Update the meta builder in `_base_client.py` to parse the `X-RateLimit-*` headers.
+- Update tests that assert on `meta.credits_used` / mock `X-Credits-*` headers to use the
+  `X-RateLimit-*` set instead.
+- Breaking change → belongs in the 4.0.0 CHANGELOG (Task 32).
