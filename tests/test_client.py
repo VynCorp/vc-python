@@ -16,7 +16,10 @@ BASE_URL = "https://vynco.ch/api"
 # ---------------------------------------------------------------------------
 
 
-def test_empty_api_key_raises_config_error():
+def test_empty_api_key_raises_config_error(monkeypatch):
+    # An empty key falls back to the env var, so null it to keep this hermetic
+    # even when VYNCO_API_KEY is exported (e.g. for the live suite).
+    monkeypatch.delenv("VYNCO_API_KEY", raising=False)
     with pytest.raises(vynco.ConfigError, match="empty"):
         vynco.Client("")
 

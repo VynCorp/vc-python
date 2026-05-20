@@ -72,6 +72,10 @@ Tooling:
 
 - Reproducible route-gap diff at `scripts/api_gap.py`.
 - Opt-in live smoke suite (`uv run pytest -m live`, gated on `VYNCO_API_KEY`).
+- All `examples/` are now tier-resilient (`examples/_common.py`): a section whose
+  endpoint the key's tier doesn't unlock is skipped with a note instead of crashing.
+- `notebooks` optional-dependency extra (`pip install "vynco[notebooks]"`) bundling
+  matplotlib/seaborn/networkx/numpy/jupyter for the example notebooks.
 
 ### Fixed
 

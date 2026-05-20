@@ -4,17 +4,25 @@ Jupyter notebooks that produce publication-ready charts from the VynCo API. Ever
 
 ## Setup
 
+The charting/runtime dependencies are bundled in the `notebooks` extra:
+
 ```bash
-pip install vynco matplotlib seaborn networkx jupyter
+pip install "vynco[notebooks]"        # or: uv sync --extra notebooks
 export VYNCO_API_KEY=vc_live_your_api_key
-jupyter lab
+jupyter lab                            # or: uv run --extra notebooks jupyter lab
 ```
 
 Or execute headlessly:
 
 ```bash
 jupyter nbconvert --to notebook --execute notebooks/<name>.ipynb --output <name>.ipynb
+# with uv:
+uv run --extra notebooks jupyter nbconvert --to notebook --execute notebooks/<name>.ipynb --output <name>.ipynb
 ```
+
+> Most notebooks call analytics, AI, and methodology endpoints, so they need a
+> **Professional** (or higher) API key to run end-to-end; on a lower tier those
+> cells return `ForbiddenError`.
 
 ## Notebooks
 
