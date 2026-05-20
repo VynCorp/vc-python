@@ -127,6 +127,10 @@ def extract_sdk_paths(resources_dir: Path) -> set[str]:
         for m in _SDK_FSTR_RE.finditer(text):
             raw = "/v1" + m.group(1)
             paths.add(normalise(raw))
+        # /health is mounted at root (no /v1) — capture it so it isn't a
+        # false-positive in the "missing" bucket.
+        if re.search(r'"/health"', text):
+            paths.add("/health")
     return paths
 
 
