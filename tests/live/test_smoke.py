@@ -17,9 +17,6 @@ import vynco
 
 pytestmark = pytest.mark.live
 
-# A stable, well-known Swiss UID (Novartis AG) for detail lookups.
-KNOWN_UID = "CHE-105.805.080"
-
 
 def _skip_if_tier_gated(exc: vynco.VyncoError) -> None:
     """Re-raise unless the failure is a tier gate (403), which becomes a skip."""
@@ -52,11 +49,16 @@ def test_company_search(client: vynco.Client) -> None:
 
 
 def test_company_get(client: vynco.Client) -> None:
+    # Derive a real UID from search so this is robust to dataset contents.
     try:
-        resp = client.companies.get(KNOWN_UID)
+        found = client.companies.list(query="bank", page_size=1)
+        if not found.data.items:
+            pytest.skip("no companies returned for query='bank'")
+        uid = found.data.items[0].uid
+        resp = client.companies.get(uid)
     except vynco.VyncoError as exc:
         _skip_if_tier_gated(exc)
-    assert resp.data.uid == KNOWN_UID
+    assert resp.data.uid == uid
     assert resp.data.name
 
 
