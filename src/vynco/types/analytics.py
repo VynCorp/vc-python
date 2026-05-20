@@ -82,8 +82,13 @@ class AuditCandidate(VyncoModel):
     canton: str | None = None
     legal_form: str | None = None
     share_capital: float | None = None
+    currency: str | None = None
     auditor_name: str | None = None
     auditor_category: str | None = None
+    change_count: int = 0
+    score: int = 0
+    risk_indicators: list[str] = []
+    auditor_tenure_years: float | None = None
 
 
 class FlowDataPoint(VyncoModel):
@@ -121,16 +126,21 @@ class MigrationResponse(VyncoModel):
 
     flows: list[MigrationFlow] = []
     top_flows: list[MigrationFlow] = []
+    data_coverage_note: str | None = None
 
 
 class BenchmarkDimension(VyncoModel):
-    """A single benchmarking dimension comparing a company to its industry peers."""
+    """A single benchmarking dimension comparing a company to its industry peers.
+
+    ``industry_median`` and ``percentile`` are null when too few peers have
+    data; ``company_value`` and ``peers_with_data`` are always present.
+    """
 
     name: str = ""
-    company_value: float | None = None
+    company_value: float = 0.0
     industry_median: float | None = None
     percentile: float | None = None
-    peers_with_data: int | None = None
+    peers_with_data: int = 0
 
 
 class BenchmarkResponse(VyncoModel):

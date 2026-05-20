@@ -50,6 +50,13 @@ class Company(VyncoModel):
     translations: list[str] | None = None
     updated_at: str | None = None
 
+    # --- Canonicalized / quality fields ---
+    status_canonical: str | None = None
+    legal_form_code: str | None = None
+    auditor_opt_out: bool | None = None
+    auditor_source: str | None = None
+    data_quality_score: float | None = None
+
     # --- Identifiers (v3.2+) ---
     lei: str | None = None
     duns: str | None = None
