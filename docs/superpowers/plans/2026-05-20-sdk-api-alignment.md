@@ -639,10 +639,23 @@ struct for consistency, after which the SDK special-case can be removed.
   `database="connected"`, `version="0.1.0"`. Confirms URL building, request,
   response parsing, and (for the no-key path) error handling all work against the
   real server. Note: `/health` emits no `X-RateLimit-*` headers (expected).
-- **Authenticated smoke suite:** BLOCKED pending a real key in the environment.
-  `VYNCO_API_KEY` was not set during the autonomous run, so the `@pytest.mark.live`
-  suite was collected-but-skipped (verified). To run it:
-  `VYNCO_API_KEY=vc_live_... uv run pytest -m live -v`.
+- **Authenticated smoke suite:** RUN against production with a free-tier key —
+  **6/6 pass** (`health`, `usage.current`, `companies.list`, `companies.get`,
+  `companies.count`, `changes.list`). (The hardcoded detail UID 404'd, so the test
+  now derives a real UID from search.)
+- **New-resource live validation (free tier):** `usage`, `settings`, `notifications`
+  (list + preferences), `sync.status`, `watches.list`, `analytics.prospects` all
+  deserialize real production responses. The professional-tier endpoints
+  (`audit.playbook`, `compliance.scope`, `ownership.analytics`, `risk.v2`) correctly
+  return **403 → `ForbiddenError`** on a free key — their models are verified
+  structurally (handler signatures + unit tests) but not yet against live data;
+  re-run the probe with a professional+ key to validate those.
+- **Examples:** `quickstart.py` runs end-to-end against prod (search → full detail →
+  real rate-limit metadata: `limit=60`). `company_network.py` runs through graph
+  (8K nodes) then hits a professional-tier 403 on `graph.analyze`. Professional/
+  enterprise examples (due_diligence, ubo_resolution, predictive_risk, bulk_export)
+  require a higher-tier key. Examples do not currently catch `ForbiddenError`, so they
+  crash rather than degrade on an under-provisioned key.
 - **`audit-log` endpoint:** the only in-router endpoint left unmodelled (Enterprise
   admin console). Deliberately out of the selected scope; the gap script reports it
   as the sole "missing" entry.
