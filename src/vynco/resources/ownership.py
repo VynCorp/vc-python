@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from vynco._response import Response
-from vynco.types.ubo import OwnershipResponse
+from vynco.types.ubo import OwnershipResponse, UboAnalytics
 
 if TYPE_CHECKING:
     from vynco._client import AsyncClient, Client
@@ -41,6 +41,12 @@ class AsyncOwnership:
             response_type=OwnershipResponse,
         )
 
+    async def analytics(self, uid: str) -> Response[UboAnalytics]:
+        """Get ownership opacity analytics (opacity score, pyramiding, graph metrics)."""
+        return await self._client._request_model(
+            "GET", f"/v1/ownership/{uid}/analytics", response_type=UboAnalytics
+        )
+
 
 class Ownership:
     """Sync ownership trace operations."""
@@ -63,4 +69,10 @@ class Ownership:
             f"/v1/ownership/{uid}",
             json=body,
             response_type=OwnershipResponse,
+        )
+
+    def analytics(self, uid: str) -> Response[UboAnalytics]:
+        """Get ownership opacity analytics (opacity score, pyramiding, graph metrics)."""
+        return self._client._request_model(
+            "GET", f"/v1/ownership/{uid}/analytics", response_type=UboAnalytics
         )

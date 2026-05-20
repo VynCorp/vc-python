@@ -12,23 +12,31 @@ from vynco.resources.ai import Ai, AsyncAi
 from vynco.resources.alerts import Alerts, AsyncAlerts
 from vynco.resources.analytics import Analytics, AsyncAnalytics
 from vynco.resources.api_keys import ApiKeys, AsyncApiKeys
+from vynco.resources.audit import AsyncAudit, Audit
 from vynco.resources.auditors import AsyncAuditors, Auditors
 from vynco.resources.billing import AsyncBilling, Billing
+from vynco.resources.bulk import AsyncBulk, Bulk
 from vynco.resources.changes import AsyncChanges, Changes
 from vynco.resources.companies import AsyncCompanies, Companies
+from vynco.resources.compliance import AsyncCompliance, Compliance
 from vynco.resources.dashboard import AsyncDashboard, Dashboard
 from vynco.resources.dossiers import AsyncDossiers, Dossiers
 from vynco.resources.exports import AsyncExports, Exports
 from vynco.resources.graph import AsyncGraph, Graph
 from vynco.resources.health import AsyncHealth, Health
+from vynco.resources.notifications import AsyncNotifications, Notifications
 from vynco.resources.ownership import AsyncOwnership, Ownership
 from vynco.resources.persons import AsyncPersons, Persons
 from vynco.resources.pipelines import AsyncPipelines, Pipelines
 from vynco.resources.reports import AsyncReports, Reports
+from vynco.resources.risk import AsyncRisk, Risk
 from vynco.resources.saved_searches import AsyncSavedSearches, SavedSearches
 from vynco.resources.screening import AsyncScreening, Screening
+from vynco.resources.settings import AsyncSettings, Settings
+from vynco.resources.sync import AsyncSync, Sync
 from vynco.resources.teams import AsyncTeams, Teams
 from vynco.resources.usage import AsyncUsage, Usage
+from vynco.resources.watches import AsyncWatches, Watches
 from vynco.resources.watchlists import AsyncWatchlists, Watchlists
 from vynco.resources.webhooks import AsyncWebhooks, Webhooks
 
@@ -88,6 +96,14 @@ class AsyncClient(BaseClientConfig):
         self.reports = AsyncReports(self)
         self.pipelines = AsyncPipelines(self)
         self.saved_searches = AsyncSavedSearches(self)
+        self.settings = AsyncSettings(self)
+        self.notifications = AsyncNotifications(self)
+        self.sync = AsyncSync(self)
+        self.audit = AsyncAudit(self)
+        self.compliance = AsyncCompliance(self)
+        self.risk = AsyncRisk(self)
+        self.bulk = AsyncBulk(self)
+        self.watches = AsyncWatches(self)
 
     async def _request(
         self,
@@ -96,6 +112,7 @@ class AsyncClient(BaseClientConfig):
         *,
         params: dict[str, str] | None = None,
         json: Any = None,
+        files: Any = None,
     ) -> httpx.Response:
         """Execute an HTTP request with retry logic."""
         url = self._url(path)
@@ -108,6 +125,7 @@ class AsyncClient(BaseClientConfig):
                     url,
                     params=params,
                     json=json,
+                    files=files,
                 )
             except httpx.HTTPError as e:
                 last_exc = e
@@ -132,9 +150,10 @@ class AsyncClient(BaseClientConfig):
         *,
         params: dict[str, str] | None = None,
         json: Any = None,
+        files: Any = None,
         response_type: type[T],
     ) -> Response[T]:
-        resp = await self._request(method, path, params=params, json=json)
+        resp = await self._request(method, path, params=params, json=json, files=files)
         return self._handle_response(resp, response_type)
 
     async def _request_empty(
@@ -221,6 +240,14 @@ class Client(BaseClientConfig):
         self.reports = Reports(self)
         self.pipelines = Pipelines(self)
         self.saved_searches = SavedSearches(self)
+        self.settings = Settings(self)
+        self.notifications = Notifications(self)
+        self.sync = Sync(self)
+        self.audit = Audit(self)
+        self.compliance = Compliance(self)
+        self.risk = Risk(self)
+        self.bulk = Bulk(self)
+        self.watches = Watches(self)
 
     def _request(
         self,
@@ -229,6 +256,7 @@ class Client(BaseClientConfig):
         *,
         params: dict[str, str] | None = None,
         json: Any = None,
+        files: Any = None,
     ) -> httpx.Response:
         """Execute an HTTP request with retry logic."""
         import time
@@ -243,6 +271,7 @@ class Client(BaseClientConfig):
                     url,
                     params=params,
                     json=json,
+                    files=files,
                 )
             except httpx.HTTPError as e:
                 last_exc = e
@@ -267,9 +296,10 @@ class Client(BaseClientConfig):
         *,
         params: dict[str, str] | None = None,
         json: Any = None,
+        files: Any = None,
         response_type: type[T],
     ) -> Response[T]:
-        resp = self._request(method, path, params=params, json=json)
+        resp = self._request(method, path, params=params, json=json, files=files)
         return self._handle_response(resp, response_type)
 
     def _request_empty(

@@ -15,6 +15,7 @@ from vynco.types.analytics import (
     CohortResponse,
     FlowsResponse,
     MigrationResponse,
+    ProspectItem,
     RfmSegmentsResponse,
 )
 from vynco.types.shared import PaginatedResponse
@@ -119,6 +120,28 @@ class AsyncAnalytics:
             "/v1/analytics/candidates",
             params=params or None,
             response_type=PaginatedResponse[AuditCandidate],
+        )
+
+    async def prospects(
+        self,
+        *,
+        auditor_category: str | None = None,
+        canton: str | None = None,
+        min_score: float | None = None,
+        pitch_readiness: str | None = None,
+        page: int | None = None,
+        page_size: int | None = None,
+    ) -> Response[PaginatedResponse[ProspectItem]]:
+        """Get audit-mandate prospects ranked by opportunity score.
+
+        ``pitch_readiness`` is ``Hot``, ``Warm``, or ``Cold``.
+        """
+        params = _build_params({k: v for k, v in locals().items() if k != "self"})
+        return await self._client._request_model(
+            "GET",
+            "/v1/analytics/prospects",
+            params=params or None,
+            response_type=PaginatedResponse[ProspectItem],
         )
 
     async def flows(
@@ -268,6 +291,28 @@ class Analytics:
             "/v1/analytics/candidates",
             params=params or None,
             response_type=PaginatedResponse[AuditCandidate],
+        )
+
+    def prospects(
+        self,
+        *,
+        auditor_category: str | None = None,
+        canton: str | None = None,
+        min_score: float | None = None,
+        pitch_readiness: str | None = None,
+        page: int | None = None,
+        page_size: int | None = None,
+    ) -> Response[PaginatedResponse[ProspectItem]]:
+        """Get audit-mandate prospects ranked by opportunity score.
+
+        ``pitch_readiness`` is ``Hot``, ``Warm``, or ``Cold``.
+        """
+        params = _build_params({k: v for k, v in locals().items() if k != "self"})
+        return self._client._request_model(
+            "GET",
+            "/v1/analytics/prospects",
+            params=params or None,
+            response_type=PaginatedResponse[ProspectItem],
         )
 
     def flows(

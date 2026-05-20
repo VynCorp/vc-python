@@ -151,3 +151,20 @@ class BenchmarkResponse(VyncoModel):
     industry: str | None = None
     peer_count: int = 0
     dimensions: list[BenchmarkDimension] = []
+
+
+class ProspectItem(VyncoModel):
+    """An audit-mandate prospect (company likely to switch auditor)."""
+
+    company_uid: str = ""
+    company_name: str = ""
+    canton: str | None = None
+    auditor_name: str | None = None
+    auditor_category: str | None = None
+    tenure_years: float | None = None
+    opportunity_score: int = 0
+    pitch_readiness: str = ""
+    estimated_mandate_value: float | None = None
+    tenure_risk: str = ""
+    share_capital: float | None = None
+    currency: str | None = None
