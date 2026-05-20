@@ -53,7 +53,7 @@ async def test_authorization_header_is_set():
         route = mock.get("/v1/usage/current").mock(
             return_value=httpx.Response(
                 200,
-                json={"tier": "starter", "groups": []},
+                json={"tier": "basic", "groups": []},
             )
         )
 
