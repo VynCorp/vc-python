@@ -5,6 +5,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-05-20
+
+Full alignment with the stabilized VynCo API. The axum router is now the source
+of truth; the SDK was reconciled endpoint-by-endpoint and the missing high-value
+endpoints were added.
+
+### Breaking
+
+- **Removed `client.credits`** and the `CreditBalance`, `CreditUsage`,
+  `CreditHistory`, `CreditLedgerEntry` types — those endpoints no longer exist.
+  Use **`client.usage.current()`** (`UsageSnapshot`) instead.
+- **`ResponseMeta`**: removed `credits_used` / `credits_remaining` (the API no
+  longer emits `X-Credits-*`). Added `rate_limit_group` and `rate_limit_window`;
+  `rate_limit_limit` / `rate_limit_remaining` / `rate_limit_reset` now reflect the
+  real `X-RateLimit-*` headers.
+- **Tier naming**: `starter` → `basic` (the API normalizes the legacy `starter`
+  alias server-side).
+- **`Team`**: removed `credit_balance` / `monthly_credits`; added
+  `stripe_subscription_id`, `current_period_end`, `cancellation_effective_at`.
+  **`BillingSummary`** / **`MemberUsage`**: removed credit fields the API no longer
+  returns.
+- **`UboPerson.person_id`** is now `str` (a UUID) — was `int`.
+- **`AiSearchResponse.results`** is now `list[AiSearchResult]` (a sparse projection)
+  — was `list[Company]`.
+- **`ComparativeResponse.auditor_analysis`** is now non-optional.
+- **`WatchlistCompanyEntry.name`** is now non-optional (`str`).
+
+### Added
+
+New resources (sync + async):
+
+- **`client.usage`** — `current()` rate-limit snapshot (replaces credits).
+- **`client.settings`** — `get_preferences()`, `update_preferences()`.
+- **`client.notifications`** — `list()`, `mark_read()`, `get_preferences()`,
+  `update_preferences()`, `test()`.
+- **`client.sync`** — `status()` pipeline freshness.
+- **`client.audit`** — `playbook(uid)` tailored audit-methodology playbook.
+- **`client.compliance`** — `scope(uid)` regulation → control → evidence tree.
+- **`client.risk`** — `v2(uid)` Bayesian risk score.
+- **`client.bulk`** — `export()` (CSV), `screening()`, `add_to_watchlist()`.
+- **`client.watches`** — `list()`, `add()`, `remove()` lightweight per-company watch.
+
+New methods / fields on existing resources:
+
+- **`ownership.analytics(uid)`** — opacity score, pyramiding, graph analytics.
+- **`analytics.prospects(...)`** — ranked audit-mandate prospects.
+- **`pipelines.update(id, name, stages)`**.
+- **`companies.list`** gained 17 filters (`founded_after`, `min_changes`,
+  `is_finma_regulated`, `noga_section`/`noga_division`/`noga_code`,
+  `data_quality_min`/`data_quality_max`, `status_canonical`, `legal_form_code`,
+  `has_auditor`/`has_lei`/`has_wikidata`, `enriched`, `board_member_search`, `uids`).
+- **`include_internal`** on `companies.events`, `changes.list`, `changes.by_company`,
+  `watchlists.events`.
+- **`persons.search`** gained `role_category`, `signing_authority`, `canton`,
+  `nationality_iso`, `place_of_origin`, `is_active`, `sort_by`, `sort_desc`.
+- **`Dossier.citations`** (+ `Citation` type); **`UboResponse`** gained
+  `ultimate_parent_lei` / `ultimate_parent_name`; **`Company`** gained
+  `status_canonical`, `legal_form_code`, `auditor_opt_out`, `auditor_source`,
+  `data_quality_score`; **`AuditCandidate`** gained `currency`, `change_count`,
+  `score`, `risk_indicators`, `auditor_tenure_years`; **`PersonSearchResult`** /
+  **`PersonDetail`** gained `nationality_iso` / `nationality_display`;
+  **`MigrationResponse`** gained `data_coverage_note`.
+
+Tooling:
+
+- Reproducible route-gap diff at `scripts/api_gap.py`.
+- Opt-in live smoke suite (`uv run pytest -m live`, gated on `VYNCO_API_KEY`).
+- All `examples/` are now tier-resilient (`examples/_common.py`): a section whose
+  endpoint the key's tier doesn't unlock is skipped with a note instead of crashing.
+- `notebooks` optional-dependency extra (`pip install "vynco[notebooks]"`) bundling
+  matplotlib/seaborn/networkx/numpy/jupyter for the example notebooks.
+
+### Fixed
+
+- **`DiffEntry`** now reads the wire `from` key (was aliased to `fromValue`, so the
+  field was always `None`).
+- **`screening.browse_sanctions`** sends snake_case `entity_type` (the handler's
+  expected key) and no longer leaks `_build_params` into the query string.
+- **`BenchmarkDimension`**: `company_value` / `peers_with_data` are non-optional.
+
 ## [3.1.0] - 2026-04-12
 
 ### Added

@@ -1,4 +1,4 @@
-"""Quickstart — Search Swiss companies, fetch details, and check your credits.
+"""Quickstart — Search Swiss companies, fetch details, and read rate-limit metadata.
 
 Usage:
     export VYNCO_API_KEY=vc_live_...
@@ -7,11 +7,11 @@ Usage:
 
 from __future__ import annotations
 
-import vynco
+from _common import get_client
 
 
 def main() -> None:
-    client = vynco.Client()
+    client = get_client()
 
     # --- Check API health ---
     health = client.health.check()
@@ -57,8 +57,8 @@ def main() -> None:
     # --- Response metadata (every call includes this) ---
     print(
         f"\n[Request {detail.meta.request_id} | "
-        f"Credits used: {detail.meta.credits_used} | "
-        f"Remaining: {detail.meta.credits_remaining}]"
+        f"Rate limit: {detail.meta.rate_limit_limit} | "
+        f"Remaining: {detail.meta.rate_limit_remaining}]"
     )
 
 

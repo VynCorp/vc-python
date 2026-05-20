@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from vynco.types.dossiers import Citation
 from vynco.types.shared import VyncoModel
 
 
@@ -13,7 +14,7 @@ class UboPerson(VyncoModel):
     resolve as UIDs against the companies endpoint.
     """
 
-    person_id: int = 0
+    person_id: str = ""
     name: str = ""
     controlling_entity_uid: str = ""
     controlling_entity_name: str = ""
@@ -53,6 +54,8 @@ class UboResponse(VyncoModel):
     ownership_chain: list[ChainLink] = []
     chain_depth: int = 0
     risk_flags: list[str] = []
+    ultimate_parent_lei: str | None = None
+    ultimate_parent_name: str | None = None
     data_coverage_note: str | None = None
 
 
@@ -116,4 +119,76 @@ class OwnershipResponse(VyncoModel):
     key_persons: list[KeyPerson] = []
     circular_flags: list[CircularFlag] = []
     risk_level: str = ""
+    assessed_at: str = ""
+
+
+class OpacityContributor(VyncoModel):
+    """A single factor contributing to an opacity score."""
+
+    code: str = ""
+    description: str = ""
+    points: int = 0
+
+
+class ShellCompanyFlag(VyncoModel):
+    """Shell-company heuristic outcome for the focus company."""
+
+    depth: int = 0
+    has_industry: bool = False
+    rationale: str = ""
+
+
+class FocusAnalytics(VyncoModel):
+    """Graph-analytics metrics for the focus company."""
+
+    pagerank: float = 0.0
+    pagerank_rank: int = 0
+    betweenness: float = 0.0
+    community_index: int | None = None
+    community_size: int = 0
+    ubo_chain_depth: int = 0
+    has_circular_ownership: bool = False
+    shell_company: ShellCompanyFlag | None = None
+
+
+class AnalysisAlgorithm(VyncoModel):
+    """Provenance of the graph-analytics computation."""
+
+    networkx_version: str = ""
+    pagerank_alpha: float = 0.0
+    louvain_seed: int = 0
+    computed_at: str = ""
+
+
+class GraphAnalyticsResponse(VyncoModel):
+    """Network graph analytics for an ownership neighbourhood."""
+
+    focus: FocusAnalytics = FocusAnalytics()
+    node_count: int = 0
+    edge_count: int = 0
+    algorithm: AnalysisAlgorithm = AnalysisAlgorithm()
+    pagerank: dict[str, float] = {}
+    betweenness: dict[str, float] = {}
+    communities: list[list[str]] = []
+
+
+class UboAnalytics(VyncoModel):
+    """Ownership opacity analytics for a company.
+
+    ``opacity_level`` is one of ``transparent``, ``normal``, ``opaque``,
+    ``highly_opaque``.
+    """
+
+    uid: str = ""
+    company_name: str = ""
+    opacity_score: int = 0
+    opacity_level: str = ""
+    pyramiding: bool = False
+    pyramiding_rationale: str | None = None
+    contributors: list[OpacityContributor] = []
+    citations: list[Citation] = []
+    obligation_refs: list[str] = []
+    peer_percentile: int | None = None
+    peer_sample_size: int = 0
+    graph_analytics: GraphAnalyticsResponse | None = None
     assessed_at: str = ""

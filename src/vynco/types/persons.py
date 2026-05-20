@@ -34,6 +34,8 @@ class PersonSearchResult(VyncoModel):
     last_name: str | None = None
     place_of_origin: str | None = None
     nationality: str | None = None
+    nationality_iso: str | None = None
+    nationality_display: str | None = None
     role_count: int | None = None
 
 
@@ -66,6 +68,8 @@ class PersonDetail(VyncoModel):
     place_of_origin: str | None = None
     residence: str | None = None
     nationality: str | None = None
+    nationality_iso: str | None = None
+    nationality_display: str | None = None
     roles: list[PersonRoleDetail] = []
 
 

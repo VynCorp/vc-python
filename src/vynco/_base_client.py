@@ -39,8 +39,8 @@ def _parse_meta(headers: httpx.Headers) -> ResponseMeta:
     """Extract metadata from API response headers."""
     return ResponseMeta(
         request_id=headers.get("X-Request-Id"),
-        credits_used=_parse_int(headers.get("X-Credits-Used")),
-        credits_remaining=_parse_int(headers.get("X-Credits-Remaining")),
+        rate_limit_group=headers.get("X-RateLimit-Group"),
+        rate_limit_window=headers.get("X-RateLimit-Window"),
         rate_limit_limit=_parse_int(headers.get("X-RateLimit-Limit")),
         rate_limit_remaining=_parse_int(headers.get("X-RateLimit-Remaining")),
         rate_limit_reset=_parse_int(headers.get("X-RateLimit-Reset")),

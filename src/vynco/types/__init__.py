@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from vynco.types.ai import (
     AiSearchResponse,
+    AiSearchResult,
     BatchRiskScoreResponse,
     DossierResponse,
     RiskFactor,
@@ -22,11 +23,30 @@ from vynco.types.analytics import (
     FlowsResponse,
     MigrationFlow,
     MigrationResponse,
+    ProspectItem,
     RfmSegmentsResponse,
 )
 from vynco.types.api_keys import ApiKey, ApiKeyCreated
+from vynco.types.audit import (
+    AnalyticalProcedure,
+    AuditPlaybook,
+    AuditProfile,
+    DataRequirement,
+    PhaseGroup,
+    PlaybookTotals,
+    ProcedureCard,
+    StandardRef,
+    StepCard,
+    StepForm,
+)
 from vynco.types.auditors import AuditorHistoryResponse, AuditorTenure, AuditorTenureStats
 from vynco.types.billing import SessionUrl
+from vynco.types.bulk import (
+    BulkScreeningMatch,
+    BulkScreeningResponse,
+    BulkScreeningResult,
+    BulkWatchlistResponse,
+)
 from vynco.types.changes import (
     ChangeStatistics,
     CompanyChange,
@@ -67,13 +87,28 @@ from vynco.types.comparative import (
     GovernanceScore,
     OverlapCompanyRole,
 )
-from vynco.types.credits import CreditBalance, CreditHistory, CreditLedgerEntry, CreditUsage
+from vynco.types.compliance import (
+    ComplianceArticle,
+    ComplianceControl,
+    ComplianceEvidence,
+    ComplianceObligation,
+    ComplianceRegulation,
+    ComplianceScope,
+    ComplianceTotals,
+)
 from vynco.types.dashboard import DashboardResponse, DataCompleteness, PipelineStatus
-from vynco.types.dossiers import Dossier, DossierSummary
+from vynco.types.dossiers import Citation, Dossier, DossierSummary
 from vynco.types.exports import ExportDownload, ExportJob
 from vynco.types.graph import GraphLink, GraphNode, GraphResponse, NetworkAnalysisResponse
 from vynco.types.health import HealthResponse
 from vynco.types.media import MediaAnalysisResponse, MediaItem, MediaResponse
+from vynco.types.notifications import (
+    MarkReadResponse,
+    Notification,
+    NotificationListResponse,
+    NotificationPreferences,
+    TestNotificationResponse,
+)
 from vynco.types.pdf import (
     PdfAuditorTenure,
     PdfBoardMember,
@@ -105,6 +140,7 @@ from vynco.types.reports import (
     IndustrySummary,
     StatusCount,
 )
+from vynco.types.risk import FactorBreakdown, RiskScoreV2Response
 from vynco.types.sanctions import SanctionEntry, SanctionsListResponse
 from vynco.types.saved_searches import SavedSearch
 from vynco.types.screening import (
@@ -114,8 +150,10 @@ from vynco.types.screening import (
     ScreeningHit,
     ScreeningResponse,
 )
+from vynco.types.settings import Preferences
 from vynco.types.shared import PaginatedResponse, VyncoModel
 from vynco.types.similar import SimilarCompaniesResponse, SimilarCompanyResult
+from vynco.types.sync import SyncStatus, SyncStatusListResponse
 from vynco.types.teams import (
     BillingSummary,
     Invitation,
@@ -125,16 +163,24 @@ from vynco.types.teams import (
 )
 from vynco.types.timeline import TimelineEvent, TimelineResponse, TimelineSummaryResponse
 from vynco.types.ubo import (
+    AnalysisAlgorithm,
     ChainLink,
     CircularFlag,
+    FocusAnalytics,
+    GraphAnalyticsResponse,
     KeyPerson,
+    OpacityContributor,
     OwnershipEntity,
     OwnershipLink,
     OwnershipResponse,
     PersonCompanyRole,
+    ShellCompanyFlag,
+    UboAnalytics,
     UboPerson,
     UboResponse,
 )
+from vynco.types.usage import GroupUsage, UsageSnapshot
+from vynco.types.watches import WatchItem
 from vynco.types.watchlists import (
     AddCompaniesResponse,
     Watchlist,
@@ -209,6 +255,7 @@ __all__ = [
     # AI
     "DossierResponse",
     "AiSearchResponse",
+    "AiSearchResult",
     "RiskScoreResponse",
     "RiskFactor",
     "RiskScoreResult",
@@ -218,11 +265,9 @@ __all__ = [
     # API Keys
     "ApiKey",
     "ApiKeyCreated",
-    # Credits
-    "CreditBalance",
-    "CreditUsage",
-    "CreditHistory",
-    "CreditLedgerEntry",
+    # Usage
+    "GroupUsage",
+    "UsageSnapshot",
     # Billing
     "SessionUrl",
     # Teams
@@ -264,6 +309,7 @@ __all__ = [
     # Dossiers
     "Dossier",
     "DossierSummary",
+    "Citation",
     # Graph
     "GraphResponse",
     "GraphNode",
@@ -326,4 +372,55 @@ __all__ = [
     "PipelineStats",
     # Saved searches
     "SavedSearch",
+    # Usage
+    # (GroupUsage / UsageSnapshot already exported above)
+    # Settings
+    "Preferences",
+    # Notifications
+    "Notification",
+    "NotificationListResponse",
+    "MarkReadResponse",
+    "NotificationPreferences",
+    "TestNotificationResponse",
+    # Sync
+    "SyncStatus",
+    "SyncStatusListResponse",
+    # Audit playbook
+    "AuditPlaybook",
+    "AuditProfile",
+    "PlaybookTotals",
+    "PhaseGroup",
+    "ProcedureCard",
+    "StepCard",
+    "StepForm",
+    "DataRequirement",
+    "AnalyticalProcedure",
+    "StandardRef",
+    # Compliance
+    "ComplianceScope",
+    "ComplianceTotals",
+    "ComplianceRegulation",
+    "ComplianceArticle",
+    "ComplianceObligation",
+    "ComplianceControl",
+    "ComplianceEvidence",
+    # Ownership analytics
+    "UboAnalytics",
+    "OpacityContributor",
+    "ShellCompanyFlag",
+    "FocusAnalytics",
+    "AnalysisAlgorithm",
+    "GraphAnalyticsResponse",
+    # Risk v2
+    "RiskScoreV2Response",
+    "FactorBreakdown",
+    # Prospects
+    "ProspectItem",
+    # Bulk
+    "BulkScreeningResponse",
+    "BulkScreeningResult",
+    "BulkScreeningMatch",
+    "BulkWatchlistResponse",
+    # Watches
+    "WatchItem",
 ]

@@ -27,6 +27,7 @@ class AsyncChanges:
         since: str | None = None,
         until: str | None = None,
         company_search: str | None = None,
+        include_internal: bool | None = None,
         page: int | None = None,
         page_size: int | None = None,
     ) -> Response[PaginatedResponse[CompanyChange]]:
@@ -39,11 +40,15 @@ class AsyncChanges:
             response_type=PaginatedResponse[CompanyChange],
         )
 
-    async def by_company(self, uid: str) -> Response[_list[CompanyChange]]:
+    async def by_company(
+        self, uid: str, *, include_internal: bool | None = None
+    ) -> Response[_list[CompanyChange]]:
         """Get changes for a specific company."""
+        params = _build_params({"include_internal": include_internal})
         return await self._client._request_model(
             "GET",
             f"/v1/changes/{uid}",
+            params=params or None,
             response_type=list[CompanyChange],
         )
 
@@ -94,6 +99,7 @@ class Changes:
         since: str | None = None,
         until: str | None = None,
         company_search: str | None = None,
+        include_internal: bool | None = None,
         page: int | None = None,
         page_size: int | None = None,
     ) -> Response[PaginatedResponse[CompanyChange]]:
@@ -106,11 +112,15 @@ class Changes:
             response_type=PaginatedResponse[CompanyChange],
         )
 
-    def by_company(self, uid: str) -> Response[_list[CompanyChange]]:
+    def by_company(
+        self, uid: str, *, include_internal: bool | None = None
+    ) -> Response[_list[CompanyChange]]:
         """Get changes for a specific company."""
+        params = _build_params({"include_internal": include_internal})
         return self._client._request_model(
             "GET",
             f"/v1/changes/{uid}",
+            params=params or None,
             response_type=list[CompanyChange],
         )
 

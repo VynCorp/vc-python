@@ -4,4 +4,4 @@ DEFAULT_BASE_URL = "https://vynco.ch/api"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_MAX_RETRIES = 2
 
-__version__ = "3.2.1"
+__version__ = "4.0.0"

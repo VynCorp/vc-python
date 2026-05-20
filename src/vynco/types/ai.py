@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from vynco.types.companies import Company
 from vynco.types.shared import VyncoModel
 
 
@@ -16,13 +15,30 @@ class DossierResponse(VyncoModel):
     generated_at: str = ""
 
 
+class AiSearchResult(VyncoModel):
+    """A single company match in an AI search response.
+
+    This is a sparse projection (not a full ``Company``); only the fields
+    below are returned, and some are absent on the keyword-fallback path.
+    """
+
+    uid: str = ""
+    name: str = ""
+    canton: str | None = None
+    status: str | None = None
+    legal_form: str | None = None
+    share_capital: float | None = None
+    industry: str | None = None
+    auditor_category: str | None = None
+
+
 class AiSearchResponse(VyncoModel):
     """AI search response."""
 
     query: str = ""
     explanation: str = ""
     filters_applied: Any = None
-    results: list[Company] = []
+    results: list[AiSearchResult] = []
     total: int = 0
 
 

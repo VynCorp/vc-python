@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import Field
+
 from vynco.types.shared import VyncoModel
 
 
@@ -33,7 +35,8 @@ class DiffEntry(VyncoModel):
     """A single field-level change in a company diff."""
 
     field: str = ""
-    from_value: str | None = None
+    # Wire key is the reserved word ``from``; expose it as ``from_value``.
+    from_value: str | None = Field(None, alias="from")
     to: str | None = None
     changed_at: str = ""
     change_type: str = ""

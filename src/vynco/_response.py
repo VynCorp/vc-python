@@ -13,20 +13,20 @@ class ResponseMeta:
     request_id: str | None = None
     """Unique request identifier for tracing (X-Request-Id)."""
 
-    credits_used: int | None = None
-    """Credits consumed by this request (X-Credits-Used)."""
+    rate_limit_group: str | None = None
+    """Endpoint group this request was metered against (X-RateLimit-Group)."""
 
-    credits_remaining: int | None = None
-    """Remaining credit balance after this request (X-Credits-Remaining)."""
+    rate_limit_window: str | None = None
+    """Rate-limit window for the group: "hour" or "day" (X-RateLimit-Window)."""
 
     rate_limit_limit: int | None = None
-    """Maximum requests per minute for the current tier (X-RateLimit-Limit)."""
+    """Request quota for the current group and window (X-RateLimit-Limit)."""
 
     rate_limit_remaining: int | None = None
     """Remaining requests in the current rate limit window (X-RateLimit-Remaining)."""
 
     rate_limit_reset: int | None = None
-    """Unix timestamp when the rate limit window resets (X-RateLimit-Reset)."""
+    """Seconds until the rate limit window resets (X-RateLimit-Reset)."""
 
     data_source: str | None = None
     """Data source attribution (X-Data-Source)."""
