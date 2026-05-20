@@ -156,7 +156,7 @@ See [examples/README.md](examples/README.md) and [notebooks/README.md](notebooks
 
 ## Response Metadata
 
-Every response includes header metadata for credit tracking and rate limiting:
+Every response includes header metadata for request tracing and rate limiting:
 
 ```python
 resp = client.companies.get("CHE-101.329.561")

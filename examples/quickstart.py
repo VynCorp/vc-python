@@ -1,4 +1,4 @@
-"""Quickstart — Search Swiss companies, fetch details, and check your credits.
+"""Quickstart — Search Swiss companies, fetch details, and read rate-limit metadata.
 
 Usage:
     export VYNCO_API_KEY=vc_live_...
