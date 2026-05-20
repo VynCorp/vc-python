@@ -227,8 +227,8 @@ async def test_response_meta_from_headers():
                 },
                 headers={
                     "X-Request-Id": "req-xyz-789",
-                    "X-Credits-Used": "0",
-                    "X-Credits-Remaining": "10000",
+                    "X-RateLimit-Group": "standard",
+                    "X-RateLimit-Window": "hour",
                     "X-RateLimit-Limit": "300",
                     "X-RateLimit-Remaining": "299",
                     "X-RateLimit-Reset": "1711800000",
@@ -241,8 +241,8 @@ async def test_response_meta_from_headers():
         resp = await client.teams.me()
 
         assert resp.meta.request_id == "req-xyz-789"
-        assert resp.meta.credits_used == 0
-        assert resp.meta.credits_remaining == 10000
+        assert resp.meta.rate_limit_group == "standard"
+        assert resp.meta.rate_limit_window == "hour"
         assert resp.meta.rate_limit_limit == 300
         assert resp.meta.rate_limit_remaining == 299
         assert resp.meta.rate_limit_reset == 1711800000

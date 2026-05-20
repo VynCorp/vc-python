@@ -35,8 +35,8 @@ async def test_company_list_parses_paginated_response():
                 },
                 headers={
                     "X-Request-Id": "req-abc-123",
-                    "X-Credits-Used": "1",
-                    "X-Credits-Remaining": "499",
+                    "X-RateLimit-Group": "search",
+                    "X-RateLimit-Window": "hour",
                     "X-RateLimit-Limit": "60",
                     "X-Data-Source": "Zefix",
                 },
@@ -54,8 +54,8 @@ async def test_company_list_parses_paginated_response():
         assert resp.data.items[0].legal_form == "AG"
 
         assert resp.meta.request_id == "req-abc-123"
-        assert resp.meta.credits_used == 1
-        assert resp.meta.credits_remaining == 499
+        assert resp.meta.rate_limit_group == "search"
+        assert resp.meta.rate_limit_window == "hour"
         assert resp.meta.rate_limit_limit == 60
         assert resp.meta.data_source == "Zefix"
 
