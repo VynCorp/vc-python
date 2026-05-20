@@ -568,3 +568,115 @@ async def test_analytics_cohorts():
 
         assert len(resp.data.cohorts) == 1
         assert resp.data.group_by == "year"
+
+
+# ---------------------------------------------------------------------------
+# Reconciliation regression tests (API alignment v4)
+# ---------------------------------------------------------------------------
+
+
+async def test_ubo_person_id_is_uuid_string_and_parent_fields():
+    # Regression: person_id is a UUID string on the wire, not an int; and the
+    # response carries ultimate_parent_lei / ultimate_parent_name.
+    with respx.mock(base_url=BASE_URL) as mock:
+        mock.get("/v1/companies/CHE-105.805.080/ubo").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "uid": "CHE-105.805.080",
+                    "companyName": "Novartis AG",
+                    "uboPersons": [
+                        {
+                            "personId": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                            "name": "Jane Doe",
+                            "controllingEntityUid": "CHE-105.805.080",
+                            "controllingEntityName": "Novartis AG",
+                            "role": "beneficial_owner",
+                            "pathLength": 1,
+                        }
+                    ],
+                    "ownershipChain": [],
+                    "chainDepth": 1,
+                    "riskFlags": [],
+                    "ultimateParentLei": "5493000IBP32UQZ0KL24",
+                    "ultimateParentName": "Novartis Holding",
+                },
+            )
+        )
+
+        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
+        resp = await client.companies.ubo("CHE-105.805.080")
+
+        assert resp.data.ubo_persons[0].person_id == "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+        assert resp.data.ultimate_parent_lei == "5493000IBP32UQZ0KL24"
+        assert resp.data.ultimate_parent_name == "Novartis Holding"
+
+
+async def test_company_diff_from_field_alias():
+    # Regression: the wire key is the reserved word "from"; it must populate
+    # DiffEntry.from_value (previously aliased to "fromValue" → always None).
+    with respx.mock(base_url=BASE_URL) as mock:
+        mock.get("/v1/companies/CHE-105.805.080/diff").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "uid": "CHE-105.805.080",
+                    "since": "2026-01-01",
+                    "until": "2026-05-01",
+                    "changes": [
+                        {
+                            "field": "address",
+                            "from": "Old St 1",
+                            "to": "New Ave 2",
+                            "changedAt": "2026-03-01T00:00:00Z",
+                            "changeType": "address_change",
+                        }
+                    ],
+                    "totalChanges": 1,
+                },
+            )
+        )
+
+        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
+        resp = await client.changes.diff("CHE-105.805.080", since="2026-01-01")
+
+        assert resp.data.changes[0].from_value == "Old St 1"
+        assert resp.data.changes[0].to == "New Ave 2"
+
+
+async def test_dossier_includes_citations():
+    # Regression: managed dossiers carry a citations array (was dropped).
+    with respx.mock(base_url=BASE_URL) as mock:
+        mock.get("/v1/dossiers/dos-001").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "id": "dos-001",
+                    "userId": "user-1",
+                    "companyUid": "CHE-105.805.080",
+                    "companyName": "Novartis AG",
+                    "level": "detailed",
+                    "content": "Body with [[obl:aml-1]] tag.",
+                    "sources": ["zefix"],
+                    "citations": [
+                        {
+                            "id": "aml-1",
+                            "regulationId": "GwG",
+                            "regulationTitle": "Anti-Money Laundering Act",
+                            "article": "Art. 3",
+                            "jurisdiction": "CH",
+                            "sourceUrl": "https://example.ch/gwg",
+                            "excerpt": "Due diligence obligations...",
+                        }
+                    ],
+                    "createdAt": "2026-05-01T00:00:00Z",
+                },
+            )
+        )
+
+        client = vynco.AsyncClient("vc_test_key", base_url=BASE_URL, max_retries=0)
+        resp = await client.dossiers.get("dos-001")
+
+        assert len(resp.data.citations) == 1
+        assert resp.data.citations[0].regulation_id == "GwG"
+        assert resp.data.citations[0].source_url == "https://example.ch/gwg"

@@ -68,7 +68,7 @@ from vynco.types.comparative import (
     OverlapCompanyRole,
 )
 from vynco.types.dashboard import DashboardResponse, DataCompleteness, PipelineStatus
-from vynco.types.dossiers import Dossier, DossierSummary
+from vynco.types.dossiers import Citation, Dossier, DossierSummary
 from vynco.types.exports import ExportDownload, ExportJob
 from vynco.types.graph import GraphLink, GraphNode, GraphResponse, NetworkAnalysisResponse
 from vynco.types.health import HealthResponse
@@ -262,6 +262,7 @@ __all__ = [
     # Dossiers
     "Dossier",
     "DossierSummary",
+    "Citation",
     # Graph
     "GraphResponse",
     "GraphNode",

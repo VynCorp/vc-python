@@ -13,7 +13,7 @@ class UboPerson(VyncoModel):
     resolve as UIDs against the companies endpoint.
     """
 
-    person_id: int = 0
+    person_id: str = ""
     name: str = ""
     controlling_entity_uid: str = ""
     controlling_entity_name: str = ""
@@ -53,6 +53,8 @@ class UboResponse(VyncoModel):
     ownership_chain: list[ChainLink] = []
     chain_depth: int = 0
     risk_flags: list[str] = []
+    ultimate_parent_lei: str | None = None
+    ultimate_parent_name: str | None = None
     data_coverage_note: str | None = None
 
 
