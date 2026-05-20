@@ -632,3 +632,17 @@ snake_case key (`entity_type`) while every other endpoint is camelCase. The SDK 
 sends snake_case for this one endpoint. Recommend the API add
 `#[serde(rename_all = "camelCase")]` (or `#[serde(rename = "entityType")]`) to that
 struct for consistency, after which the SDK special-case can be removed.
+
+### Live verification (Task 30)
+- **Connectivity (unauthenticated):** verified end-to-end against production
+  `https://vynco.ch/api/health` via the SDK — parsed `status="healthy"`,
+  `database="connected"`, `version="0.1.0"`. Confirms URL building, request,
+  response parsing, and (for the no-key path) error handling all work against the
+  real server. Note: `/health` emits no `X-RateLimit-*` headers (expected).
+- **Authenticated smoke suite:** BLOCKED pending a real key in the environment.
+  `VYNCO_API_KEY` was not set during the autonomous run, so the `@pytest.mark.live`
+  suite was collected-but-skipped (verified). To run it:
+  `VYNCO_API_KEY=vc_live_... uv run pytest -m live -v`.
+- **`audit-log` endpoint:** the only in-router endpoint left unmodelled (Enterprise
+  admin console). Deliberately out of the selected scope; the gap script reports it
+  as the sole "missing" entry.
